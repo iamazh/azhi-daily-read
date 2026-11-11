@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>阿智的每日短读 · 今天读点有意思的</title>
+<style>
+  :root{
+    --paper:#f6f1e6; --card:#fffdf7; --line:#e6dcc8; --ink:#3b332a; --muted:#9a8f78;
+    --warm:#b0602e; --gold:#a47a2e; --blue:#3f6188; --green:#5f7d52;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"Songti SC","SimSun","PingFang SC","Microsoft YaHei",serif;background:linear-gradient(180deg,#f1e9d8,#f8f3e8);color:var(--ink);min-height:100vh;padding:16px 14px 60px;}
+  .app{max-width:600px;margin:0 auto;}
+  .head{display:flex;align-items:center;gap:11px;margin-bottom:6px;}
+  .logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--warm),var(--gold));color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .ht{font-weight:900;font-size:19px;letter-spacing:1px;}
+  .ht small{display:block;font-size:10.5px;color:var(--muted);font-weight:500;letter-spacing:2px;}
+  .date{margin-left:auto;font-size:12px;color:var(--muted);text-align:right;}
+  .date b{color:var(--gold);font-size:14px;}
+  .mood{margin:9px 0 14px;font-size:13px;color:var(--muted);line-height:1.7;font-style:italic;}
+  .screen{display:none;}.screen.on{display:block;animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .cards{display:flex;flex-direction:column;gap:12px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 16px;cursor:pointer;transition:.15s;position:relative;}
+  .card:hover{border-color:var(--warm);transform:translateY(-2px);box-shadow:0 4px 14px rgba(120,70,10,.08);}
+  .card .tg{display:inline-block;font-size:11px;color:#fff;border-radius:4px;padding:2px 8px;letter-spacing:1px;margin-bottom:8px;}
+  .t-home{background:var(--warm);} .t-school{background:var(--blue);} .t-love{background:#b05478;} .t-friend{background:var(--green);} .t-jx{background:#5d4a8c;} .t-life{background:#8a7a3c;}
+  .card h3{font-size:17px;font-weight:900;letter-spacing:.5px;}
+  .card .ti{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.7;}
+  .card .ok{position:absolute;top:14px;right:14px;font-size:11px;color:var(--green);letter-spacing:1px;}
+  .card.read{opacity:.72;}
+  .crumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .crumb .back{cursor:pointer;color:var(--gold);}
+  .sheet{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 20px;box-shadow:0 4px 14px rgba(60,40,0,.05);}
+  .sheet .tagline{font-size:12px;letter-spacing:2px;color:var(--muted);text-align:center;margin-bottom:6px;}
+  .sheet h2{font-size:20px;text-align:center;letter-spacing:1px;}
+  .sheet .para{font-size:16px;line-height:2.05;letter-spacing:.5px;text-align:justify;margin-top:13px;}
+  .finish{display:block;width:100%;margin-top:18px;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--warm),var(--gold));color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:2px;}
+  .interact{background:var(--card);border:1px dashed var(--gold);border-radius:14px;padding:18px;margin-top:14px;}
+  .interact .k{font-size:12px;letter-spacing:2px;color:var(--gold);margin-bottom:10px;}
+  .interact .q{font-size:15px;line-height:1.9;margin-bottom:12px;}
+  .em{display:block;width:100%;text-align:left;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:9px;transition:.12s;}
+  .em:hover{border-color:var(--warm);}
+  .reply{background:#f3ead6;border-left:4px solid var(--gold);border-radius:8px;padding:12px 14px;margin-top:12px;font-size:14px;line-height:1.9;animation:fade .3s;}
+  .reply b{color:var(--warm);}
+  .readblock{font-size:13.5px;line-height:1.85;color:var(--ink);margin-top:10px;}
+  .reco-card{background:var(--card);border:1px dashed var(--gold);border-radius:14px;padding:18px;margin-top:16px;}
+  .reco-card .k{font-size:12px;letter-spacing:2px;color:var(--gold);margin-bottom:10px;}
+  .type-row{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;}
+  .type-btn{border:1px solid var(--blue);color:var(--blue);background:transparent;padding:7px 13px;border-radius:20px;font-size:13px;cursor:pointer;font-family:inherit;}
+  .type-btn.sel{background:var(--blue);color:#fff;}
+  .book{padding:9px 0;border-bottom:1px dashed var(--line);}
+  .book:last-child{border:none;}
+  .book .bn{font-weight:800;font-size:15px;}
+  .book .bd{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.6;}
+  .tip{font-size:12.5px;color:var(--muted);line-height:1.8;margin-top:6px;}
+  .footnote{text-align:center;color:var(--muted);font-size:11px;margin-top:24px;letter-spacing:1px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="head">
+    <div class="logo">📖</div>
+    <div class="ht">阿智的每日短读<small>今天，随手读两篇</small></div>
+    <div class="date"><b id="dateTxt">--</b><br><span id="doneChip"></span></div>
+  </div>
+  <div class="mood">读得开心就好，读不完也没关系。这只是一个，给今天的你开的小窗。</div>
+
+  <!-- 今日列表 -->
+  <div class="screen on" id="s-list">
+    <div class="cards" id="todayCards"></div>
+    <div class="reco-card" style="margin-top:16px;">
+      <div class="k">🌙 今晚，还想读点别的吗？</div>
+      <div class="type-row" id="typeRow"></div>
+      <div id="bookBox"><div class="tip">点一个你感兴趣的类型，我给你荐本书。</div></div>
+    </div>
+  </div>
+
+  <!-- 阅读+互动 -->
+  <div class="screen" id="s-read">
+    <div class="crumb"><span class="back" onclick="backToList()">← 今日</span><span id="crumbTag"></span></div>
+    <div class="sheet" id="sheet"></div>
+    <div id="interactBox"></div>
+  </div>
+
+  <div class="footnote">每日短读 · 只负责让你多看见一点世界</div>
+</div>
+
+<script>/* ============ 每日短读 · 内容库 ============
+   想更新文章，直接改这个文件里的数组即可：
+   1. 新增一组（某一天）就再加一个 [ {…},{…},{…} ]；
+   2. 保存后，手机/浏览器刷新页面就会看到新内容。
+   结构：tag 主题 / tg 颜色 / emo 图标 / title 标题 / intro 引子 / paras 正文段 / q 情感问题 / opts 情绪选项(每项一个回应) / read 精简解读 */
+window.DAILY_CONTENT = [
+  /* —— 第 1 天 —— */
+  [
+    {tag:"家国",tg:"t-home",emo:"🏔️",title:"雪线之上",
+      intro:"一个边防军人的儿子，在雪山和老家之间，第一次读懂“守国门”三个字。",
+      paras:["那年我们家的年，是在视频里过的。我爸在帕米尔高原的一座哨所，海拔四千米，雪把月亮压到三月底。他一年只回来一两回，视频信号断断续续，声音像被风切成了好几段。",
+        "芒果干是托人从山那边捎来的，他说是“顺手带的”。我偷偷翻过那盒芒果干，下面压着他留档的调令——他本有机会调回老家，是自己没递上去。我问为什么，他只说：“那边得有人站岗。”",
+        "除夕那晚，我在他压箱底的本子里翻到一张折了很多道的纸，画着歪扭的简图：山口、哨塔、雪线。最上面一行铅笔小字已经淡了：“家，在雪线的南边。”",
+        "我站在窗前看满城灯火，忽然明白：他站的那道雪线，把我家、把我们这座城、把南边所有亮灯的家，都挡在了风雪的外头。"],
+      q:"读完这篇，此刻最贴近你心里的感觉是？",
+      opts:[{t:"孤独",r:"你把那座雪山的冷，读到心里去了。"},{t:"牵挂",r:"有个名字，在你想念的时候轻轻冒出来。"},{t:"温暖",r:"有些守候，是隔着雪山也能暖到的。"},{t:"说不清",r:"有些感受，本来就说不清，这就对了。"}],
+      read:"“守国门”不是口号，是爸爸一个人站在风雪里望着家的方向。最动人的，是他从不说自己伟大，只画了一条雪线——把守住的，都藏在雪线下面。"},
+    {tag:"友",tg:"t-friend",emo:"🧡",title:"一张检讨书",
+      intro:"一张检讨书，写着两个人的名字。青春里最好的朋友，是肯替你扛的那一个。",
+      paras:["周五放学，我弄脏了黑板报。下周一就要评比，我吓得整晚没睡好，一早冲进教室想偷偷擦掉。",
+        "推门却愣住了——班长正站在黑板前，用粉笔把花边一点点描好。他回头看见我，笑着说：“我以为是值日生弄的，顺手补上了。”",
+        "后来我才知道，是同桌先发现我的窘迫。他没说破，趁没人时自己把弄脏的地方补好，只求评比前别让我难堪。",
+        "那周黑板报拿了奖。全班都在欢呼，只有我，一直记得那张被悄悄补好的花边。"],
+      q:"读完这篇，此刻最贴近你心里的感觉是？",
+      opts:[{t:"感动",r:"有个人肯替你圆场，还不说破。"},{t:"愧疚",r:"也许你想起某个，没来得及说谢谢的人。"},{t:"温暖",r:"这是青春里最干净的一种善意。"},{t:"说不清",r:"朋友这两个字，本来就该有点说不清。"}],
+      read:"最好的友情，常是“我替你圆场，还不让你难堪”。读它时你想起的那张脸，大概就是你真想一直当朋友的人。"},
+    {tag:"春",tg:"t-school",emo:"🌸",title:"晚自习的窗",
+      intro:"一段没说完的话，一个没说出口的人，都藏在这扇窗里。",
+      paras:["晚自习的教室很安静，只有笔尖沙沙。我坐在靠窗的位置，窗外是操场，夏夜的风带来桂花香。",
+        "我总在抬头看窗的时候，碰巧也看见她抬头。四目相对半秒，又都低下头假装写作业，其实一个字都没写进去。",
+        "毕业前那晚，她在窗台放了一张纸条，只有一行字：“谢谢你每次路过，都朝我笑。”",
+        "我攥着纸抬头看窗外——灯还亮着，桂花树影影绰绰。有些话没说出口，却已经传得很远。"],
+      q:"读完这篇，此刻最贴近你心里的感觉是？",
+      opts:[{t:"心动",r:"那种“四目相对又躲开”的瞬间，太真实了。"},{t:"害羞",r:"有些喜欢，就藏在一扇窗的桂香里。"},{t:"遗憾",r:"青春总有点没说完的话。"},{t:"说不清",r:"说不清就对了，青春本来就说不清。"}],
+      read:"最珍贵的，常常不是终于说出口的那句，而是那些“差一点就要说”的瞬间。它干干净净，也让人记一辈子。"}
+  ],
+  /* —— 第 2 天 —— */
+  [
+    {tag:"军",tg:"t-home",emo:"🌊",title:"洪峰过境",
+      intro:"那年江水漫过我家门槛，有人把我从二楼背到冲锋舟上，没留下名字。",
+      paras:["那年夏天的江水，涨得像一头沉默的兽。我站在二楼阳台往下看，水位一天天漫过石阶、漫过花坛、漫过对岸老榆树的根。",
+        "最危急那晚，有人把我背上了背。他浑身湿透，作战服的水往下淌，可步子踩得很稳，一步一步把我送上冲锋舟，转身又走回没过腰的洪水里。我叫他“同志——”，他回头朝我点了下头。",
+        "那夜街坊挤在安置点。半夜，他和战友端来一大桶热粥，一勺一勺分给老人孩子。我问他叫什么，他摆摆手：“我是解放军。”",
+        "水退那天，全镇人去送他们。人们往他们手里塞米汤、塞煮鸡蛋，他们敬了个礼，红了眼眶。"],
+      q:"读完这篇，此刻最触动你的是？",
+      opts:[{t:"敬佩",r:"把命泡进水里、还不留名，真担得起“敬佩”。"},{t:"感恩",r:"你也想起，某个替陌生人出过手的人。"},{t:"震撼",r:"有些担当，光是读到，就让人心头发紧。"},{t:"说不清",r:"有些东西沉进心里，反而不太能说清。"}],
+      read:"“军民鱼水深情”从来不是课本的字，是一个不肯留名的人，把命泡进陌生的水，去护一群和他毫无血缘的家。那一句“我是解放军”，就够了。"},
+    {tag:"侠",tg:"t-jx",emo:"🗡️",title:"最后一把刀",
+      intro:"一个退隐的刀客，为护一个不相识的孩子，出了最后一刀。",
+      paras:["阿刀在镇上开了三年面馆，没人再见他动过刀——除了切面。镇上人都叫他“老面”。",
+        "那日两个山匪闯进镇，踹翻了孩子的面摊。孩子跌倒在地，眼看就要挨那一下。老面端面的手停了停，看了看自己沾满面粉的手。",
+        "他放下碗，慢慢走过去，说：“那孩子，是老面的客人。”话音未落，他抽刀——不是腰间的，是案上那把砍面的刀。刀光一晃，山匪的刀落了地。",
+        "他把刀放回案上，继续揉面，跟没事人一样。只是那天起，镇上的人都明白：老面不只会做面，还护得住人。"],
+      q:"读完这篇，此刻你心里的感觉是？",
+      opts:[{t:"畅快",r:"看他把刀放下又拾起，那种分量，真畅快。"},{t:"敬佩",r:"侠就是——有本事，却只愿安分守一碗面。"},{t:"热血",r:"那一刀，是为护人才出的。"},{t:"说不清",r:"有些英雄，是藏在面馆里的。"}],
+      read:"真正的“侠”，不在刀刃，而在一个退隐者心里。他护的不是名，是“孩子不该挨那一下”的念头。江湖的尽头，往往是平常人的手。"},
+    {tag:"友",tg:"t-friend",emo:"🌧️",title:"一把伞的事",
+      intro:"那场雨，让两个从没说过话的人，成了朋友。",
+      paras:["放学忽然下起大雨，我站在教学楼门口发愁——没带伞。",
+        "他举着伞路过，顿了顿，把伞往我这边倾了倾：“顺路吗？”",
+        "我嘴上说顺路，其实我家在相反方向。伞不大，他的肩很快湿透。我没敢说，他也假装没懂。",
+        "后来每次下雨，他都会多带一把伞，说“顺路”。那把伞，撑了整整一个夏天。"],
+      q:"读完这篇，此刻最贴近你心里的是？",
+      opts:[{t:"温暖",r:"那把伞撑开的，是整条湿透的街里最暖的一段。"},{t:"羡慕",r:"你也想要一个，愿意“顺路”的人。"},{t:"会心",r:"这种默契，真的会让人嘴角一弯。"},{t:"说不清",r:"有些友情，就藏在没说破里。"}],
+      read:"最好的朋友，常常是从“顺路吗”这三个字开始的。真正的朋友，会把你的方向，也当成自己的方向。"}
+  ],
+  /* —— 第 3 天 —— */
+  [
+    {tag:"家",tg:"t-home",emo:"🕯️",title:"归途",
+      intro:"父亲常年在外，他第一次看见：原来父亲一直在等他说“我来接你”。",
+      paras:["父亲年轻时跑长途，常年不在家。我嫌他：别人的爸爸都在家，就他总在路上。",
+        "高二那年，我放暑假，说想去看看他的路。他愣住了，半天，说：“那……我带你去。”",
+        "我第一次坐在他车里，看他一天一夜不睡觉，在盘山路上啃冷馒头，把每张挣来的钱都留出来，说“给你读书的”。也我第一次看见，他把车停在服务区，趴在我腿上，只有十分钟，就睡着了。",
+        "那年秋天我返校，他没来送我，只发了条短信：“路上注意安全。”我盯着那四个字看了很久，忽然懂了，他这辈子的爱，都藏在这四个字里，藏在每一段他替我们跑的路里。"],
+     q:"读完这篇，此刻最贴近你心里的是？",
+     opts:[{t:"愧疚",r:"有些迟来的理解，往往让人鼻子一酸。"},{t:"心酸",r:"那些不说爱、只拼命赶路的人，最让人心酸。"},{t:"温暖",r:"爸爸的爱，常常藏在四个字里。"},{t:"说不清",r:"有些话，是长大以后才听懂的。"}],
+     read:"有些父母，把“爱”说成一句“路上小心”。他们不擅于开口，却用一段一段路、一个又一个芒果干，把没说出口的牵挂，都摆在你看得见的地方。"},
+    {tag:"春",tg:"t-school",emo:"🍂",title:"运动会那天的名字",
+     intro:"接力赛最后一棒，他把名字让给了我。",
+     paras:["运动会，4×100米接力。名单公布那天，我看见最后一棒写着他的名，而我被排在第二棒。",
+       "我们班的成绩一直垫底，教练皱着眉在名单上改了又改。最后一刻，他把名字从最后一棒划掉，写上了我的。",
+       "他压着嗓子说：“你脚快，这一棒你来冲。”我拿着签着“我”的名单，手有点抖。",
+       "枪响那刻，我接棒时余光看见他在看台上拼命挥手。后来我们拿了个第二，教练拍着他肩膀说“你眼光真准”。只有我知道，他把自己最出彩的那一棒，让给了别人。"],
+     q:"读完这篇，此刻你的感觉是？",
+     opts:[{t:"动容",r:"把最出彩的一棒让给你，这不叫输，叫成全。"},{t:"想一个人",r:"你有没有，也被谁偷偷让过一步？"},{t:"热血",r:"跑起来的那一刻，是真的爽。"},{t:"说不清",r:"有些成全，比赢更让人难忘。"}],
+     read:"把“最后一棒”让给你的人，不是在退让，而是在相信你能发光。青春里最难忘的，往往不是第一名，而是有个人，愿意把高光时刻递到你手里。"},
+    {tag:"侠",tg:"t-jx",emo:"🏮",title:"不归的镖师",
+     intro:"“一镖不空回。”他守的，是镖，更是一句承诺。",
+     paras:["镖局老许，一辈子没让人看走过镖。掌柜临走那天，交他一支箭，说：“若我不回，把这只箭，交回我家。”",
+       "那之后，山道的消息断了。老许没等到掌柜，只等到一支没有寄出的箭。他变卖了自己半生的积蓄，请人替他，把那支箭送回掌柜家，还带上一袋银子。",
+       "有人问他值不值，他说：“镖，就是答应人家的事。答应了，就是一辈子。”",
+       "后来，那只箭安然送到掌柜妻子手里。她看着箭，看了很久，才说：“他答应过，会回家的。”老许听了，站在雨里，久久没说话。"],
+     q:"听完这篇，此刻最触动你的感觉是？",
+     opts:[{t:"感动",r:"一个人守着一句承诺，守了半辈子。"},{t:"心酸",r:"那句“答应过”，压在谁心里都重。"},{t:"敬佩",r:"守信，比武功更像“侠”。"},{t:"说不清",r:"有些约定，是要用一生去兑现的。"}],
+     read:"“侠”不止在刀剑里，也在“答应过的事，就得做到”里。镖师守的不是一支镖，是一个人把话说出去的那一瞬间。"}
+  ],
+  /* —— 第 4 天 —— */
+  [
+    {tag:"友",tg:"t-friend",emo:"🚲",title:"一条回家的路",
+      intro:"“顺路”了三年，那条回家的路，其实谁都没说破。",
+      paras:["我们俩家离得不近，可每次放学，他都说“顺路”，陪我到我家楼下，再折返回去。",
+        "起初我信了，后来才知道，他家在反方向。我假装不知道，他也假装不知道。就这样，那条路，我们并着走了三年。",
+        "毕业那天，他站在我家楼下，说：“明天开始，我就不顺路了。”",
+        "我愣在那里，忽然很想，把这条被他顺了三次的路，再走一遍。可他已经转身，晚霞把他的影子拉得很长，像那条路，没有尽头。"],
+      q:"读完之后，此刻你的感觉是？",
+      opts:[{t:"舍不得",r:"三年“顺路”，说散就散，谁会舍得。"},{t:"遗憾",r:"有些同行，走到岔路口，才知道有多长。"},{t:"感同身受",r:"你也曾在某个路口，送走过谁。"},{t:"说不清",r:"有些路，走到尽头，才开始懂得。"}],
+      read:"青春里最干净的“我喜欢”，常常不说出口，而是藏在一句“顺路”里。真正的好朋友，是愿意把自己的路，弯到你家门口的人。"},
+    {tag:"春",tg:"t-love",emo:"💌",title:"抄在作业本上的话",
+      intro:"一首诗，抄了一遍又一遍，最后也没敢递出去。",
+      paras:["那阵子，我总在后半节课，偷偷写着一句话，又擦掉。",
+        "我把最喜欢的一句诗抄了无数遍，塞进作业本，又抽出来。那张纸，被我握得皱皱巴巴。",
+        "毕业那天，它还在我书包里。我到底没递出去。她走了，我攥着那张纸站在校门口，直到放学铃响了三遍。",
+        "很多年以后，那张纸我还留着，字迹都淡了。我终于明白：有些诗，不是用来送人的，是写给心里的。"],
+      q:"我很想，和你说点什么。读完这篇，此刻最贴近你心里的感觉是？",
+      opts:[{t:"可惜",r:"有些话，等过了那个年纪，就再说不出口了。"},{t:"共鸣",r:"那个没递出去的东西，也许你也有一件。"},{t:"释然",r:"有些喜欢，放在心里，反而更完整。"},{t:"说不清",r:"青春的诗，本来就该有未完的。"}],
+      read:"青春里有一类“喜欢”，从来不是结果，而是“想递又没递出去”的那个过程。它没结果，反而成了青春里最纯的一段。"},
+    {tag:"家",tg:"t-home",emo:"🕰️",title:"那把旧椅子",
+      intro:"爷爷修了一辈子椅子，却一直忘了修他自己。",
+      paras:["爷爷的院子里，有一把坐了一辈子的藤椅，扶手磨得发亮。我从小就爬上去，听他说年轻时候跑工地的故事。",
+      "后来我慢慢长大，坐不进去那把椅子了。爷爷也坐不进去了——他的腰弯了，只能扶着椅背站一会儿。",
+      "有一次我回家，看见爷爷坐在小马扎上，拿砂纸一点一点打磨那把旧椅子。他磨得很慢，像在打磨一段早就错过的时光。",
+      "我问他磨它做什么，他笑了笑说：“怕哪天，你回来，还能坐一坐。”那把磨得发亮的椅子，我坐着，忽然，懂了什么叫“他在等我，等了一辈子”。"],
+      q:"读完这篇，你的心里是？",
+      opts:[{t:"心酸",r:"那句“怕你回来”，戳到的，是心里最软的地方。"},{t:"感动",r:"长辈的爱，常常是修好一把椅子，等你回来。"},{t:"思念",r:"有没有谁，也在等你坐回那把椅子？"},{t:"说不清",r:"有些等待，藏在藤条和木纹里。"}],
+      read:"爷爷不是在修椅子，是在“等你回来坐一坐”。那一把藤椅，分明是时间，也是他们整整一辈子的牵挂。"}
+  ]
+];</script>
+<script>
+/* ============ 文章库：4 天 × 3 篇，按日期轮换 ============ */
+const GROUPS=window.DAILY_CONTENT;
+
+/* ============ 书籍推荐（类型 → 书） ============ */
+const BOOKS={
+  "青春成长":[{n:"《城南旧事》林海音",d:"用一个孩子的眼睛看离别与成长，温柔又干净，读得进去也能练语感。"},{n:"《呼兰河传》萧红",d:"文字像夏天的河水，清清凉凉，里面全是少女的心里话。"}],
+  "历史 / 家国":[{n:"《红星照耀中国》埃德加·斯诺",d:"一个外国记者深入根据地写下的真实记录，读它会懂“家国”不是字。"},{n:"《平凡的世界》路遥",d:"一个人，一条路，一个时代。奋斗的故事，读到后面会上头。"}],
+  "科幻 / 悬疑":[{n:"《三体》青少年版 刘慈欣",d:"宇宙级烧脑，读完会一直想“我们到底在哪里”。"},{n:"《小王子》",d:"看似童话，其实是写给成年人的哲学，每个青春都值得读一遍。"}],
+  "江湖武侠":[{n:"《射雕英雄传》金庸",d:"郭靖的成长，乔峰的家国，侠义二字，从这本书读起。"},{n:"《笑傲江湖》金庸",d:"不是打打杀杀，是“自由”和“规矩”的碰撞，很多你想问的，都在里面。"}],
+  "社会 / 心理":[{n:"《苏菲的世界》乔斯坦·贾德",d:"一部哲学入门，用侦探小说的写法，让一个少女学会了“思考”。"},{n:"《小王子》",d:"“重要的东西，眼睛是看不见的。”一读，就回不去了。"}]
+};
+const TYPES=["青春成长","奇幻 / 家国","科幻 / 悬疑","江湖武侠","社会 / 心理"];
+
+/* ================================================== */
+/* 状态：只记录“今天读过哪几篇”，轻量、无压力 */
+const KEY="azhiDailyRead";
+let S; try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){S=null;}
+if(!S){S={read:[]};}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){/* 存储不可用时静默降级，不影响阅读 */}};
+
+/* 按日期取当天的一组（每天 2-3 篇，循环轮换） */
+const dayIndex=Math.floor(Date.now()/86400000);
+const todayGroup=GROUPS[dayIndex%GROUPS.length];
+
+/* ---------- 渲染：今日列表 ---------- */
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('on'));document.getElementById(id).classList.add('on');}
+function todayStr(){const d=new Date();return (d.getMonth()+1)+'月'+d.getDate()+'日';}
+function renderList(){
+  document.getElementById('dateTxt').textContent=todayStr()+' · 短读';
+  const doneN=todayGroup.filter(s=>S.read.includes(s.title)).length;
+  document.getElementById('doneChip').textContent = doneN?('今日已读 '+doneN+'/'+todayGroup.length):'今日还没读';
+  const box=document.getElementById('todayCards');box.innerHTML='';
+  todayGroup.forEach(s=>{
+    const isRead=S.read.includes(s.title);
+    const c=document.createElement('div');c.className='card'+(isRead?' read':'');
+    c.innerHTML=`<span class="tg ${s.tagCls}">${s.emo} ${s.tag}</span>${isRead?'<span class="ok">✓ 已读</span>':''}<h3>${s.title}</h3><div class="ti">${s.intro}</div>`;
+    c.onclick=()=>openStory(s);
+    box.appendChild(c);
+  });
+  /* 类型推荐 */
+  renderTypes();
+}
+/* 推荐类型按钮 */
+function renderTypes(){
+  const row=document.getElementById('typeRow');row.innerHTML='';
+  TYPES.forEach(t=>{
+    const b=document.createElement('button');b.className='type-btn';b.textContent=t;
+    b.onclick=()=>{showBooks(t,b);};
+    row.appendChild(b);
+  });
+}
+function showBooks(type,btn){
+  document.querySelectorAll('.type-btn').forEach(x=>x.classList.remove('sel'));
+  if(btn)btn.classList.add('sel');
+  const box=document.getElementById('bookBox');box.innerHTML='';
+  const list=BOOKS[type];
+  box.innerHTML='<div class="tip">喜欢“'+type+'”的话，这些书可以试试：</div>'+list.map(b=>`<div class="book"><div class="bn">${b.n}</div><div class="bd">${b.d}</div></div>`).join('');
+}
+/* ---------- 阅读 ---------- */
+let cur=null;
+function openStory(s){
+  cur=s;
+  show('s-read');
+  document.getElementById('crumbTag').textContent=s.emo+' '+s.tag+' · '+s.title;
+  document.getElementById('sheet').innerHTML=`<div class="stline">${s.emo} ${s.tag}</div><h2>${s.title}</h2>${s.paras.map(p=>`<div class="para">${p}</div>`).join('')}<button class="finish" onclick="finishStory()">读完了 · 说点心里话</button>`;
+  document.getElementById('interactBox').innerHTML='';
+}
+function finishStory(){
+  const s=cur;
+  // 标记读过（轻量）
+  if(!S.read.includes(s.title)){S.read.push(s.title);save();}
+  // 互动：情感把握（非对错）
+  document.getElementById('interactBox').innerHTML=
+    `<div class="interact"><div class="k">✿ 读完这篇，此刻最贴近你心里的感觉是？</div>
+     <div class="q">${s.q}</div>
+     ${s.opts.map((o,i)=>`<button class="em" onclick="pickEmotion(this,${i})">${o.t}</button>`).join('')}
+     <div id="emReply"></div>
+     <div class="reading" id="readBlock" style="display:none"><b style="color:var(--warm)">一段小解读：</b><br>${s.read}</div>
+     <div class="tip" style="margin-top:10px" id="nextTip"></div></div>`;
+}
+function pickEmotion(btn,i){
+  const o=cur.opts[i];
+  document.querySelectorAll('.em').forEach(x=>{x.style.borderColor='';x.style.background='';});
+  btn.style.borderColor='var(--gold)';btn.style.background='#f3ead6';
+  document.getElementById('emReply').innerHTML=`<div class="reply"><b>${o.r}</b></div>`;
+  document.getElementById('readBlock').style.display='block';
+  document.getElementById('nextTip').innerHTML='<span class="home-link" onclick="backToList()">读完啦，回去看看今天还有没有想读的 →</span>';
+}
+function backToList(){show('s-list');renderList();}
+
+/* 初始化 */
+renderList();
+</script>
+</body>
+</html>
