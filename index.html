@@ -71,10 +71,14 @@
   <!-- 今日列表 -->
   <div class="screen on" id="s-list">
     <div class="cards" id="todayCards"></div>
-    <div class="reco-card" style="margin-top:16px;">
+<div class="reco-card" style="margin-top:16px;">
       <div class="k">🌙 今晚，还想读点别的吗？</div>
       <div class="type-row" id="typeRow"></div>
-      <div id="bookBox"><div class="tip">点一个你感兴趣的类型，我给你荐本书。</div></div>
+      <div style="display:flex;gap:8px;margin:12px 0 4px;">
+        <input id="prefInput" type="text" placeholder="直接输入你喜欢的书名或类型（例：冒险 / 科幻 / 温暖 / 悬疑 / 哈利）" onkeydown="if(event.key==='Enter')recoByInput()" style="flex:1;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink);">
+        <button class="type-btn" onclick="recoByInput()" style="flex:none;background:var(--gold);border-color:var(--gold);color:#fff;padding:10px 16px;">推荐</button>
+      </div>
+      <div id="bookBox"><div class="tip">点一个类型，或在上面输入框里写你喜欢的书/题材，我替你挑书，还会把你的口味记下来。</div></div>
     </div>
   </div>
 
@@ -221,13 +225,17 @@ const GROUPS=window.DAILY_CONTENT;
 
 /* ============ 书籍推荐（类型 → 书） ============ */
 const BOOKS={
-  "青春成长":[{n:"《城南旧事》林海音",d:"用一个孩子的眼睛看离别与成长，温柔又干净，读得进去也能练语感。"},{n:"《呼兰河传》萧红",d:"文字像夏天的河水，清清凉凉，里面全是少女的心里话。"}],
-  "历史 / 家国":[{n:"《红星照耀中国》埃德加·斯诺",d:"一个外国记者深入根据地写下的真实记录，读它会懂“家国”不是字。"},{n:"《平凡的世界》路遥",d:"一个人，一条路，一个时代。奋斗的故事，读到后面会上头。"}],
-  "科幻 / 悬疑":[{n:"《三体》青少年版 刘慈欣",d:"宇宙级烧脑，读完会一直想“我们到底在哪里”。"},{n:"《小王子》",d:"看似童话，其实是写给成年人的哲学，每个青春都值得读一遍。"}],
-  "江湖武侠":[{n:"《射雕英雄传》金庸",d:"郭靖的成长，乔峰的家国，侠义二字，从这本书读起。"},{n:"《笑傲江湖》金庸",d:"不是打打杀杀，是“自由”和“规矩”的碰撞，很多你想问的，都在里面。"}],
-  "社会 / 心理":[{n:"《苏菲的世界》乔斯坦·贾德",d:"一部哲学入门，用侦探小说的写法，让一个少女学会了“思考”。"},{n:"《小王子》",d:"“重要的东西，眼睛是看不见的。”一读，就回不去了。"}]
+  "冒险奇幻":[{n:"《哈利·波特与魔法石》J.K.罗琳",d:"魔法学校、会飞的扫帚、真朋友——好读又动人，是青春期最棒的幻想入门。"},{n:"《查理和巧克力工厂》罗尔德·达尔",d:"一座巧克力做的工厂，荒诞又好笑，读起来像跟着看一场冒险。"}],
+  "科幻冒险":[{n:"《记忆传授人》洛伊丝·劳里",d:"一个被规划得完美无瑕的世界里，少年发现了秘密——青少年最爱、一点不吓人的科幻。"},{n:"《地心游记》儒勒·凡尔纳",d:"坐进地壳去探险的经典老科幻，读得进去，还长见识。"}],
+  "青春校园":[{n:"《草房子》曹文轩",d:"油麻地一群孩子的童年，纯净、幽默又有点心酸，读得进去也练文笔。"},{n:"《窗边的小豆豆》黑柳彻子",d:"一个被退学的孩子遇见温暖老师的真实故事，治愈又好笑。"}],
+  "推理悬疑":[{n:"《福尔摩斯探案集》青少版",d:"跟着福尔摩斯一步步推理、把案子破出来，那种爽感特别上头。"},{n:"《无人生还》阿加莎·克里斯蒂",d:"孤岛十人、一个个消失，悬念拉到满的经典。"}],
+  "温暖治愈":[{n:"《夏洛的网》E.B.怀特",d:"一只蜘蛛和一头小猪的友情，温柔到会眼眶一热，初中生就能读。"},{n:"《小狗钱钱》博多·舍费尔",d:"一只会说话的小狗教人存钱，有趣又暖，很多孩子爱读。"}],
+  "动物世界":[{n:"《狼王梦》沈石溪",d:"一只狼妈妈想把孩子养狼王，热血又感人，动物小说里的经典。"},{n:"《最后一头战象》沈石溪",d:"一头战象最后的尊严，短而动人，读起来快、记得住。"}],
+  "历史故事":[{n:"《明朝那些事儿》当年明月",d:"历史写成段子一样好玩，读着读着，就把明朝读完了。"},{n:"《少年读史记》青少版",d:"把《史记》讲成好懂的故事，古代人物个个有血有肉。"}],
+  "成长故事":[{n:"《绿山墙的安妮》蒙哥马利",d:"一个爱幻想的小女孩长大，温暖又励志，特别适合现在。"},{n:"《城南旧事》林海音",d:"用孩子的眼睛看离别与长大，干净、感人、也练语感。"}],
+  "全推荐":[{n:"《哈利·波特与魔法石》罗琳",d:"最稳的入门，好读、上头、一读就停不下来。"},{n:"《窗边的小豆豆》黑柳彻子",d:"治愈、好笑、没什么门槛。"},{n:"《福尔摩斯探案集》青少版",d:"想找点刺激就看这个，推理很过瘾。"}]
 };
-const TYPES=["青春成长","奇幻 / 家国","科幻 / 悬疑","江湖武侠","社会 / 心理"];
+const TYPES=["冒险奇幻","青春校园","推理悬疑","科幻冒险","温暖治愈","动物世界","历史故事","成长故事"];
 
 /* ================================================== */
 /* 状态：只记录“今天读过哪几篇”，轻量、无压力 */
@@ -271,8 +279,35 @@ function showBooks(type,btn){
   document.querySelectorAll('.type-btn').forEach(x=>x.classList.remove('sel'));
   if(btn)btn.classList.add('sel');
   const box=document.getElementById('bookBox');box.innerHTML='';
-  const list=BOOKS[type];
+  const list=BOOKS[type]||BOOKS['全推荐'];
   box.innerHTML='<div class="tip">喜欢“'+type+'”的话，这些书可以试试：</div>'+list.map(b=>`<div class="book"><div class="bn">${b.n}</div><div class="bd">${b.d}</div></div>`).join('');
+}
+/* 自由输入推荐：按关键词匹配类型，并把阿智的口味记下来 */
+function recoByInput(){
+  const box=document.getElementById('bookBox');
+  const inp=document.getElementById('prefInput');
+  const v=(inp?inp.value:'').trim();
+  if(v){
+    S.likes=S.likes||[];
+    S.likes.push(v); if(S.likes.length>8)S.likes=S.likes.slice(-8);
+    save();
+  }
+  let type='全推荐';
+  if(v){
+    const map=[
+      ['冒险奇幻',['冒险','奇幻','魔法','哈利','波特','怪物','神秘','宝']],
+      ['青春校园',['校园','青春','同学','同桌','学校','班里']],
+      ['推理悬疑',['推理','悬疑','破案','侦探','案件','悬念','谜']],
+      ['科幻冒险',['科幻','未来','机器人','外星','宇宙','科学']],
+      ['温暖治愈',['温暖','治愈','感动','难过','暖心','治愈']],
+      ['动物世界',['动物','狼','狗','猫','恐龙','战象']],
+      ['历史故事',['历史','朝代','古代','将军','明朝','史记']],
+      ['成长故事',['成长','长大','努力','坚持','奋斗']]
+    ];
+    for(const m of map){ if(m[1].some(k=>v.includes(k))){ type=m[0]; break; } }
+  }
+  showBooks(type);
+  if(v){ box.insertAdjacentHTML('afterbegin','<div class="tip" style="color:var(--gold)">✏️ 已记下：'+v+' —— 以后给你的文章和书，会往这个口味靠。</div>'); }
 }
 /* ---------- 阅读 ---------- */
 let cur=null;
