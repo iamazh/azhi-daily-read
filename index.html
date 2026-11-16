@@ -71,6 +71,7 @@
   <!-- 今日列表 -->
   <div class="screen on" id="s-list">
     <div class="cards" id="todayCards"></div>
+    <div id="footprint" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px;"></div>
 <div class="reco-card" style="margin-top:16px;">
       <div class="k">🌙 今晚，还想读点别的吗？</div>
       <div class="type-row" id="typeRow"></div>
@@ -241,7 +242,8 @@ const TYPES=["冒险奇幻","青春校园","推理悬疑","科幻冒险","温暖
 /* 状态：只记录“今天读过哪几篇”，轻量、无压力 */
 const KEY="azhiDailyRead";
 let S; try{S=JSON.parse(localStorage.getItem(KEY));}catch(e){S=null;}
-if(!S){S={read:[]};}
+if(!S){S={read:[],totalRead:0,days:{},likes:[]};}
+S.totalRead=S.totalRead||0; S.days=S.days||{}; S.likes=S.likes||[];
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){/* 存储不可用时静默降级，不影响阅读 */}};
 
 /* 按日期取当天的一组（每天 2-3 篇，循环轮换） */
@@ -265,6 +267,32 @@ function renderList(){
   });
   /* 类型推荐 */
   renderTypes();
+  /* 足迹 */
+  renderFoot();
+}
+/* 足迹数据 */
+function todayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function streakDays(){
+  let n=0; const d=new Date();
+  for(let i=0;i<365;i++){
+    const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(S.days&&S.days[k]){n++;d.setDate(d.getDate()-1);}else{break;}
+  }
+  return n;
+}
+function renderFoot(){
+  const el=document.getElementById('footprint'); if(!el)return;
+  const tk=todayKey();
+  const todayN=(S.days&&S.days[tk])||0;
+  const likes=(S.likes&&S.likes.length)?S.likes.slice(-4).join('、'):'还没记下～输入几次就有啦';
+  el.innerHTML=`<div style="font-size:12px;letter-spacing:2px;color:var(--gold);margin-bottom:8px;">📊 我的足迹</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:14px;">
+      <span>累计读过 <b style="color:var(--warm)">${S.totalRead||0}</b> 篇</span>
+      <span>不同文章 <b style="color:var(--warm)">${S.read.length}</b> 篇</span>
+      <span>连续 <b style="color:var(--warm)">${streakDays()}</b> 天</span>
+      <span>今天 <b style="color:var(--warm)">${todayN}</b> 篇</span>
+    </div>
+    <div class="tip" style="margin-top:6px;">记下的口味：${likes}</div>`;
 }
 /* 推荐类型按钮 */
 function renderTypes(){
@@ -320,8 +348,11 @@ function openStory(s){
 }
 function finishStory(){
   const s=cur;
-  // 标记读过（轻量）
-  if(!S.read.includes(s.title)){S.read.push(s.title);save();}
+  // 记录：读过 + 累计 + 日期
+  if(!S.read.includes(s.title)){S.read.push(s.title);}
+  S.totalRead=(S.totalRead||0)+1;
+  const d=todayKey(); S.days=S.days||{}; S.days[d]=(S.days[d]||0)+1;
+  save();
   // 互动：情感把握（非对错）
   document.getElementById('interactBox').innerHTML=
     `<div class="interact"><div class="k">✿ 读完这篇，此刻最贴近你心里的感觉是？</div>
