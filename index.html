@@ -389,11 +389,11 @@ function renderList(){
 /* ============ 我的书架 ============ */
 function shelfBooks(){ S.shelf=S.shelf||[]; return S.shelf; }
 function renderShelf(){
-  renderReadable();
+  
   const box=document.getElementById('shelfBox'); if(!box)return;
   const books=shelfBooks();
   if(!books.length){ box.innerHTML='<div class="tip">书架空空的～把你想读的书加进来吧。</div>'; return; }
-  box.innerHTML=books.map((b,i)=>`<div class="book" style="display:flex;align-items:center;gap:8px;"><div style="flex:1;"><div class="bn">${b.name}</div>${b.note?`<div class="bd">${b.note}</div>`:''}</div><button onclick="exportBook(${i})" title="下载一个可离线阅读的本地书文件" style="flex:none;border:1px solid #c9b27a;background:#f6efdd;color:#8a6d2f;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit;">📥 存本地书</button><button onclick="delShelfBook(${i})" style="flex:none;border:1px solid #d9a0a0;background:#f8eaea;color:#a05050;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit;">删除</button></div>`).join('');
+  box.innerHTML=books.map((b,i)=>`<div class="book" style="display:flex;align-items:center;gap:8px;"><div style="flex:1;"><div class="bn">${b.name}</div>${b.note?`<div class="bd">${b.note}</div>`:''}</div><button onclick="delShelfBook(${i})" style="flex:none;border:1px solid #d9a0a0;background:#f8eaea;color:#a05050;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit;">删除</button></div>`).join('');
 }
 function addShelfBook(){
   const inp=document.getElementById('shelfInput');
@@ -412,120 +412,6 @@ function delShelfBook(i){
   save();
   renderShelf();
 }
-/* ============ 存成本地书（下载自包含阅读文件） ============ */
-function downloadHTML(name,text){
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([text],{type:'text/html;charset=utf-8'}));
-  a.download=(name.replace(/[\\/:*?"<>|]/g,'_'))+'.html';
-  document.body.appendChild(a); a.click(); a.remove();
-}
-function exportBook(i){
-  const b=shelfBooks()[i]; if(!b)return;
-  const rb=READABLE.find(x=>b.name.indexOf(x.title)>=0||x.title.indexOf(b.name)>=0);
-  if(rb){ downloadHTML(rb.title, buildReaderHTML(rb.title,rb.author,rb.chapters,null)); return; }
-  /* 受版权保护的书：带导读 + 正文粘贴区（文本由自己放入） */
-  const rev=(window.DAILY_CONTENT||[]).reduce((a,g)=>a.concat(g),[]).find(s=>s.title.indexOf('导读')===0&&b.name.length>=2&&s.title.indexOf(b.name.slice(0,4))>=0);
-  const review=rev?('【导读 · 荐】'+rev.paras.join('\n\n')):('【荐】'+b.name+'：想读的话，把你自己有的电子文本粘贴到下面，点"生成我的书"。');
-  downloadHTML(b.name, buildReaderHTML(b.name,'整理：阿智',null,review));
-}
-/* 生成自包含阅读器 HTML（内置书带全文；否则提供粘贴导入+自动分章） */
-function buildReaderHTML(title,author,chapters,review){
-  var CSS='body{font-family:Songti SC,SimSun,serif;background:#f6f1e6;color:#3b332a;margin:0;padding:16px 14px 70px}#app{max-width:620px;margin:0 auto}h2{text-align:center;letter-spacing:1px;margin:4px 0}h4{color:#a47a2e;letter-spacing:2px;font-size:12px;text-align:center;margin:0 0 14px}.para{font-size:16px;line-height:2.05;text-align:justify;margin-top:13px}.rev{background:#fffdf7;border-left:4px solid #a47a2e;border-radius:8px;padding:12px 14px;font-size:14px;line-height:1.9;white-space:pre-wrap;color:#5c5243}.btns{display:flex;gap:10px;margin-top:16px}button{flex:1;padding:11px;border:none;border-radius:10px;font-size:14px;cursor:pointer;font-family:inherit}button.g{background:linear-gradient(135deg,#b0602e,#a47a2e);color:#fff}button.o{background:transparent;border:1px solid #d9cdb8;color:#8a7f6b}.toc{background:#fffdf7;border:1px solid #e6dcc8;border-radius:12px;padding:10px 14px;margin-top:12px}.tt{padding:9px 4px;border-bottom:1px dashed #e6dcc8;cursor:pointer;font-size:14.5px}.tt:last-child{border:none}.tt.cur{color:#b0602e;font-weight:800}textarea{width:100%;height:220px;border:1px solid #d9cdb8;border-radius:10px;padding:10px;font-family:inherit;font-size:14px;box-sizing:border-box}.tip{font-size:12.5px;color:#8a7f6b;line-height:1.8}.top{display:flex;align-items:center;gap:8px}.top b{cursor:pointer;color:#a47a2e;font-size:13px}.top span{font-size:13px;color:#8a7f6b;flex:1}.top button{flex:none;width:auto;padding:5px 12px;font-size:12px;background:transparent;border:2px solid #a47a2e;color:#a47a2e;border-radius:8px}';
-  var H=[];
-  H.push('<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+title+'</title><style>'+CSS+'</style></head><body><div id="app"></div><scr'+'ipt>');
-  H.push('var TITLE='+JSON.stringify(title)+';var AU='+JSON.stringify(author||'')+';var BUILTIN='+JSON.stringify(chapters||null)+';var REVIW='+JSON.stringify(review||'')+';');
-  H.push('var K="rbk_"+TITLE;var CH=null,st=0;');
-  H.push('try{CH=BUILTIN?BUILTIN:JSON.parse(localStorage.getItem(K+"_txt")||"null")}catch(e){CH=null}');
-  H.push('try{st=(JSON.parse(localStorage.getItem(K)||"0").ch)||0}catch(e){st=0}');
-  H.push('var app=document.getElementById("app");');
-  H.push('function saveP(){try{localStorage.setItem(K,JSON.stringify({ch:st}))}catch(e){}}');
-  H.push('function tocH(){var h="";for(var i=0;i<CH.length;i++){h+=\'<div class="tt\'+(i===st?" cur":"")+\'" onclick="go(\'+i+\')">\'+CH[i].t+\'</div>\'}return \'<div class="toc">\'+h+\'</div>\'}');
-  H.push('function fin(){app.innerHTML=\'<div style="text-align:center;padding:30px 0"><div style="font-size:36px">📖</div><h2>\'+TITLE+\' 读完了</h2><p class="tip">又读完一本。合上它，想想记住了一句什么。</p><div class="btns"><button class="o" onclick="go(0)">再读一遍</button></div></div>\'}');
-  H.push('function go(i){st=i;saveP();render()}');
-  H.push('function buildFromPaste(t){var ls=t.split(/\\r?\\n/).map(function(s){return s.trim()}).filter(Boolean);var chs=[],cur=null;ls.forEach(function(s){if(/^第[0-9一二三四五六七八九十百千两]+[章节卷回幕部]/.test(s)&&s.length<40){cur={t:s,paras:[]};chs.push(cur)}else{if(!cur){cur={t:"正文",paras:[]};chs.push(cur)}cur.paras.push(s)}});if(!chs.length)chs=[{t:"正文",paras:ls}];return chs}');
-  H.push('function mk(){var t=document.getElementById("ta").value;if(!t.trim()){alert("先粘贴文本再生成～");return}CH=buildFromPaste(t);st=0;try{localStorage.setItem(K+"_txt",JSON.stringify(CH))}catch(e){}render()}');
-  H.push('function render(){var head=\'<div class="top"><b onclick="location.reload()">← 刷新</b><span>\'+TITLE+\' · \'+(CH?(\'第\'+(st+1)+\'章 / 共\'+CH.length+\'章\'):\'待导入\')+\'</span><button onclick="var d=document.getElementById(\\\'tocd\\\');d.style.display=(d.style.display===\\\'none\\\'?\\\'block\\\':\\\'none\\\')">目录</button></div>\';if(!CH){app.innerHTML=head+\'<h4>\'+AU+\'</h4>\'+(REVIW?\'<div class="rev">\'+REVIW+\'</div>\':\'\')+\'<p class="tip" style="margin-top:14px">把这本书的文本粘贴到下面，点"生成我的书"，自动分章、自动记阅读进度。文件保存在本机，仅自己阅读。</p><textarea id="ta" placeholder="粘贴文本（会自动按 第X章 分章）"></textarea><div class="btns"><button class="g" onclick="mk()">生成我的书</button></div>\'}else{var end=st>=CH.length-1;app.innerHTML=head+\'<h2>\'+CH[st].t+\'</h2><h4>\'+AU+\'</h4>\'+CH[st].paras.map(function(p){return \'<div class="para">\'+p+\'</div>\'}).join(\'\')+\'<div class="btns">\'+(st>0?\'<button class="o" onclick="go(\'+(st-1)+\')">← 上一章</button>\':\'\')+(end?\'<button class="g" onclick="fin()">读到最后啦</button>\':\'<button class="g" onclick="go(\'+(st+1)+\')">下一章 →</button>\')+\'</div><div id="tocd" style="display:none">\'+tocH()+\'</div>\'}}');
-  H.push('render();');
-  H.push('</scr'+'ipt></body></html>');
-  return H.join('');
-}
-/* ============ 可读的书（原创短篇，带目录+进度） ============ */
-const READABLE=[
- {id:'b1',title:'山间与雪线',author:'写给阿智',bg:'linear-gradient(135deg,#3f6188,#1c3550)',
-  chapters:[
-   {t:'一、一封到不了的家',paras:["我爸在帕米尔高原守了四年。山太高，信号不好，信常常在路上，走着走着就没了。","我妈总把到家的信纸按日期压平，裱进相册。有一回信被雨淋湿，字都洇开了，我妈还是收好，说那是爸寄回来的，不能扔。","那封信里就一行字：爸说，山上的雪今年特别大，怕是回不去过年了，可等到开春，一定带你们去村口那棵老槐树底下坐坐。"]},
-   {t:'二、芒果干',paras:["后来爸托人从山那边捎回来一袋芒果干。他说是邻居捎带的，给我换换口味。","我舍不得一次吃完，每天一小块。到第七天，摸到袋底，压着一张折得小小的字条：“给娃读书用。”是爸的字，写得有点抖。","字条底下，是他攒下的一点钱，被芒果干浸了一路的甜香。"]},
-   {t:'三、雪线以南',paras:["高二那年暑假，我第一次去看他。坐了三天三夜的车，又爬了大半天的山。","他在哨所门口等我，被风把脸吹得通红，见了我，却先笑了。","夜里我翻他的柜子，翻到一张折了又折的纸，画着山口和一道雪线，最下面一行小字：“家，在雪线的南边。”","那一刻我懂了：他守的从来不是那座山，是山南边，那些还在等他回家的人。"]}
- ]},
- {id:'b2',title:'雨季的伞',author:'写给阿智',bg:'linear-gradient(135deg,#7d5a92,#4a3f7a)',
-  chapters:[
-   {t:'一、顺路',paras:["那天下雨，他举着伞从我身边走过去，忽然停了半秒：“顺路吗？”","我说顺路。其实我家在相反方向。他也没追问，把伞往我这边倾了倾。","一路上我们聊了很多。到家时，我才发现他半边肩，早被雨打湿了。"]},
-   {t:'二、一场雨',paras:["后来我才知道，他家根本不在我那个方向。他那天是特意多绕了一段路，就为那句“顺路”。","我没说破，他也没说。那场雨之后，只要下雨，他都会多带一把伞。","我们之间的朋友，好像就是从那一句“顺路”开始的，一路也没破。"]},
-   {t:'三、毕业的晚霞',paras:["毕业那天，又下雨。他把伞往我手里一塞：“伞给你，以后我可就不带了。”","我攥着那把旧伞，站在校门口，雨后的晚霞拉得很长。","很多年过去，我还是会在下雨天想起：有个人，愿意把回家的路，绕到我这边的门。"]}
- ]}
-];
-let curBook=null,curChI=0,curPar=0;
-function renderReadable(){
-  const g=document.getElementById('readableGrid'); if(!g)return;
-  g.innerHTML=READABLE.map(b=>{
-    const p=S.progress&&S.progress[b.id];
-    const chip=p?(p.done?'已读完':('读至 第'+(p.ch+1)+'章')):'未读';
-    return `<div class="bcover" style="background:${b.bg}" onclick="openBook('${b.id}')"><div><div class="bt">${b.title}</div><div class="au">${b.author}</div></div><span class="ab">${chip}</span></div>`;
-  }).join('');
-}
-function openBook(id){
-  const b=READABLE.find(x=>x.id===id); if(!b)return;
-  curBook=b;
-  const p=(S.progress&&S.progress[id])||null;
-  if(p&&p.done){ curChI=p.ch||0; curPar=0; show('s-reading'); finishBook(); return; }
-  curChI=p?Math.min(p.ch,b.chapters.length-1):0;
-  curPar=p?Math.min((p.para||0),b.chapters[curChI].paras.length-1):0;
-  show('s-reading'); renderRead();
-}
-function renderRead(){
-  const b=curBook, ch=b.chapters[curChI], last=b.chapters.length-1;
-  document.getElementById('readTitle').textContent=b.title;
-  S.progress=S.progress||{}; S.progress[b.id]={ch:curChI,para:curPar}; save();
-  const slice=ch.paras.slice(curPar,curPar+3);
-  document.getElementById('readshell').innerHTML=
-    `<div class="rk">第${curChI+1}章 · ${ch.t}</div><h2>${b.title}</h2><div class="au2">${b.author}</div>`+
-    slice.map(p=>`<div class="para">${p}</div>`).join('');
-  const lastPage=curPar+3>=ch.paras.length;
-  const nav=document.getElementById('readNav');
-  nav.innerHTML=`<div style="display:flex;gap:10px"><button class="navbtn ghost" onclick="prevPage()">← 上一页</button>${(curChI===last&&lastPage)?'<button class="navbtn gold" onclick="finishBook()">读到最后啦</button>':'<button class="navbtn gold" onclick="nextPage()">下一页 →</button>'}</div>`;
-}
-function nextPage(){
-  const b=curBook, ch=b.chapters[curChI], last=b.chapters.length-1;
-  if(curPar+3<ch.paras.length){ curPar+=3; renderRead(); }
-  else if(curChI<last){ curChI++; curPar=0; renderRead(); }
-  else { finishBook(); }
-}
-function prevPage(){
-  if(curPar>0){ curPar=Math.max(0,curPar-3); renderRead(); }
-  else if(curChI>0){ curChI--; curPar=0; renderRead(); }
-}
-function finishBook(){
-  S.progress=S.progress||{}; S.progress[curBook.id]={ch:curChI,para:0,done:true}; save();
-  document.getElementById('readTitle').textContent=curBook.title;
-  document.getElementById('readshell').innerHTML=`<div style="text-align:center;padding:26px 0"><div style="font-size:34px">📖</div><h2>《${curBook.title}》读完了</h2><p style="color:var(--muted);margin-top:8px">又读完一本，好样的。</p></div>`;
-  document.getElementById('readNav').innerHTML=`<div style="display:flex;gap:10px"><button class="navbtn ghost" onclick="restartBook()">再读一遍</button><button class="navbtn gold" onclick="backToList()">回书架</button></div>`;
-}
-function restartBook(){ curChI=0; curPar=0; renderRead(); }
-function toggleToc(){
-  const box=document.getElementById('tocBox');
-  if(box.style.display==='block'){ box.style.display='none'; return; }
-  const b=curBook;
-  box.innerHTML=`<div style="font-size:12px;letter-spacing:1px;color:var(--muted);margin-bottom:6px;">📖 目录 · ${b.title}</div>`+
-    b.chapters.map((c,i)=>{
-      const cur=(i===curChI);
-      const p=S.progress&&S.progress[b.id];
-      const done=(p&&((p.ch>i)||(p.ch===i&&p.done)));
-      return `<div class="toc-item${cur?' cur':''}" onclick="jumpChapter(${i})"><span>${c.t}</span><span class="p">${cur?'正在读':(done?'✓ 已读':'')}</span></div>`;
-    }).join('')+
-    (S.progress&&S.progress[b.id]&&S.progress[b.id].done?'<div style="font-size:12px;color:var(--green);margin-top:6px;">✓ 全书已读完</div>':'');
-  box.style.display='block';
-}
-function jumpChapter(i){ curChI=i; curPar=0; document.getElementById('tocBox').style.display='none'; renderRead(); }
 /* ============ 书架口味 → 今晚推荐 ============ */
 function shelfHintType(){
   const kw=[
