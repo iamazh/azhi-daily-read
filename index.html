@@ -78,6 +78,33 @@
   .navbtn{flex:1;padding:11px;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-family:inherit;font-weight:700;}
   .navbtn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted);}
   .navbtn.gold{background:linear-gradient(135deg,var(--warm),var(--gold));color:#fff;}
+  /* ---- 连载（小说） ---- */
+  .serial-card{background:linear-gradient(135deg,#2c3e5d,#1a2740);color:#eef3fb;border:1px solid #3d5170;border-radius:14px;padding:16px;cursor:pointer;transition:.15s;margin-top:12px;}
+  .serial-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(20,35,60,.35);}
+  .serial-card .sk{font-size:11px;letter-spacing:2px;color:#9fb8dd;}
+  .serial-card h3{font-size:17px;margin:5px 0 4px;letter-spacing:.5px;}
+  .serial-card .sd{font-size:12.5px;color:#b7c7de;line-height:1.7;}
+  .serial-card .tagline{position:absolute;}
+  .modal-mask{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(20,15,5,.55);z-index:90;display:flex;align-items:center;justify-content:center;padding:18px;}
+  .modal{background:var(--card);border-radius:16px;max-width:480px;width:100%;padding:22px 20px;max-height:86vh;overflow-y:auto;}
+  .type-grid{display:flex;flex-wrap:wrap;gap:9px;margin:13px 0 4px;}
+  .type-chip{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:20px;padding:9px 15px;font-size:14px;cursor:pointer;font-family:inherit;transition:.12s;}
+  .type-chip.on{background:var(--warm);border-color:var(--warm);color:#fff;font-weight:700;}
+  .m-h{font-size:17px;font-weight:900;letter-spacing:1px;text-align:center;}
+  .m-s{font-size:13px;color:var(--muted);line-height:1.8;text-align:center;margin-top:8px;}
+  .m-btn{display:block;width:100%;margin-top:16px;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--warm),var(--gold));color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:2px;}
+  .m-close{position:sticky;bottom:0;}
+  .serialpick{cursor:pointer;-webkit-touch-callout:none;user-select:none;}
+  /* ---- 摘抄 ---- */
+  .catchbtn{display:inline-block;border:1px solid #d9cdb8;background:#faf6ec;color:#8a6d2f;border-radius:6px;padding:2px 9px;font-size:11px;cursor:pointer;font-family:inherit;margin-left:6px;vertical-align:middle;}
+  .catchbtn.done{background:#eef2e4;color:#5f7d52;border-color:#b9d29a;}
+  .quote-item{padding:10px 2px;border-bottom:1px dashed var(--line);}
+  .quote-item:last-child{border:none;}
+  .quote-item .qt{font-size:15px;line-height:1.9;}
+  .quote-item .qs{font-size:11.5px;color:var(--muted);margin-top:4px;}
+  .quote-item .qdel{color:#a05050;font-size:12px;cursor:pointer;margin-top:4px;display:inline-block;}
+  .subtab{display:inline-block;font-size:12px;color:var(--gold);letter-spacing:2px;margin:14px 0 8px;}
+  .fakebox textarea{width:100%;min-height:74px;border:1px dashed var(--gold);border-radius:10px;padding:10px;font-family:inherit;font-size:14px;line-height:1.8;box-sizing:border-box;background:#fbf7ee;color:var(--ink);}
 </style>
 </head>
 <body>
@@ -92,8 +119,15 @@
 
   <!-- 今日列表 -->
   <div class="screen on" id="s-list">
+    <div id="serialBox"></div>
+    <div class="subtab" id="serialIntro"></div>
     <div class="cards" id="todayCards"></div>
-<div id="footprint" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px;"></div>
+  <!-- 周日回顾 -->
+    <div id="weekReview" style="display:none;background:linear-gradient(135deg,#f7efe0,#f3e9d5);border:1px solid var(--gold);border-radius:14px;padding:16px;margin-top:14px;">
+      <div class="k" style="font-size:12px;letter-spacing:2px;color:var(--gold);margin-bottom:10px;">🎉 周末小总结 · 你的这一周</div>
+      <div id="weekReviewBody"></div>
+    </div>
+    <div id="footprint" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px;"></div>
     <div class="reco-card" style="margin-top:12px;">
       <div class="k">📚 我的书架 · 我关注的书</div>
       <div id="shelfBox"></div>
@@ -119,6 +153,29 @@
     <div class="crumb"><span class="back" onclick="backToList()">← 今日</span><span id="crumbTag"></span></div>
 <div class="sheet" id="sheet"></div>
     <div id="interactBox"></div>
+  </div>
+
+  <!-- 摘抄本 -->
+  <div class="screen" id="s-quotes">
+    <div class="crumb"><span class="back" onclick="backToList()">← 今日</span><b>我的摘抄本</b></div>
+    <div class="sheet" id="quoteSheet"></div>
+  </div>
+
+  <!-- 连载阅读页 -->
+  <div class="screen" id="s-serial">
+    <div class="crumb"><span class="back" onclick="backToList()">← 今日</span><span id="serialCrumb"></span></div>
+    <div class="sheet" id="serialSheet"></div>
+  </div>
+
+  <!-- 选类型弹窗 -->
+  <div class="modal-mask" id="typeModal" style="display:none;">
+    <div class="modal">
+      <div class="m-h">🌟 新功能：连载小说开始啦</div>
+      <div class="m-s">从今天起，每天更新一篇正在连载的小说——主角像一个普通初中生，但每个故事都不普通。<br>先告诉它你爱看哪种类型（可多选，选完今晚就能看第一章）：</div>
+      <div class="type-grid" id="serialTypes"></div>
+      <div class="tip" id="serialHint" style="color:var(--warm);text-align:center;margin-top:6px;">至少选一个哦</div>
+      <button class="m-btn" onclick="confirmSerialTypes()">就选这些，开始看 →</button>
+    </div>
   </div>
 
   <div class="footnote">每日短读 · 只负责让你多看见一点世界</div>
@@ -450,12 +507,14 @@ function renderFoot(){
   const tk=todayKey();
   const todayN=(S.days&&S.days[tk])||0;
   const likes=(S.likes&&S.likes.length)?S.likes.slice(-4).join('、'):'还没记下～输入几次就有啦';
+  const qn=(S.quotes||[]).length+(S.imitations||[]).length;
   el.innerHTML=`<div style="font-size:12px;letter-spacing:2px;color:var(--gold);margin-bottom:8px;">📊 我的足迹</div>
     <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:14px;">
       <span>累计读过 <b style="color:var(--warm)">${S.totalRead||0}</b> 篇</span>
       <span>不同文章 <b style="color:var(--warm)">${S.read.length}</b> 篇</span>
       <span>连续 <b style="color:var(--warm)">${streakDays()}</b> 天</span>
       <span>今天 <b style="color:var(--warm)">${todayN}</b> 篇</span>
+      <span style="cursor:pointer;" onclick="openQuotes()">📒 摘抄+仿写 <b style="color:var(--gold)">${qn}</b> 条</span>
     </div>
     <div class="tip" style="margin-top:6px;">记下的口味：${likes}</div>`;
 }
@@ -508,7 +567,7 @@ function openStory(s){
   cur=s;
   show('s-read');
   document.getElementById('crumbTag').textContent=s.emo+' '+s.tag+' · '+s.title;
-  document.getElementById('sheet').innerHTML=`<div class="stline">${s.emo} ${s.tag}</div><h2>${s.title}</h2>${s.paras.map(p=>`<div class="para">${p}</div>`).join('')}<button class="finish" onclick="finishStory()">读完了 · 说点心里话</button>`;
+  document.getElementById('sheet').innerHTML=`<div class="stline">${s.emo} ${s.tag}</div><h2>${s.title}</h2>${s.paras.map(p=>`<div class="para serialpick" ondblclick="catchPara(this)" onclick="singleTapCatch(this)" title="双击收藏这句话">${p}</div>`).join('')}<button class="finish" onclick="finishStory()">读完了 · 说点心里话</button>`;
   document.getElementById('interactBox').innerHTML='';
 }
 function finishStory(){
@@ -533,11 +592,235 @@ function pickEmotion(btn,i){
   btn.style.borderColor='var(--gold)';btn.style.background='#f3ead6';
   document.getElementById('emReply').innerHTML=`<div class="reply"><b>${o.r}</b></div>`;
   document.getElementById('readBlock').style.display='block';
-  document.getElementById('nextTip').innerHTML='<span class="home-link" onclick="backToList()">读完啦，回去看看今天还有没有想读的 →</span>';
+  if(!document.getElementById('imitBox')){
+    document.getElementById('nextTip').innerHTML='<div class="fakebox" id="imitBox" style="margin-top:12px;"><div class="tip" style="color:var(--warm);">✍️ 选做 · 一句话仿写：挑这篇文章里你最喜欢的一个句式，写一句你自己的生活（例：把"教室里很安静"写成"教室里静得听得见笔尖心跳"）。<br>不想写就跳过，完全没关系。</div><textarea id="imitText" placeholder="仿写一句（选做）……"></textarea><div style="display:flex;gap:8px;margin-top:8px;"><button class="type-btn" style="background:var(--gold);border-color:var(--gold);color:#fff;" onclick="saveImit()">存进我的摘抄本</button><button class="type-btn" onclick="skipImit()">跳过</button></div></div><span class="home-link" onclick="backToList()">回到今天 →</span>';
+  }
+}
+function skipImit(){ const b=document.getElementById('imitBox'); if(b)b.remove(); }
+function saveImit(){
+  const t=(document.getElementById('imitText').value||'').trim();
+  if(!t){alert('写一句再存呀～（也可以点跳过）');return;}
+  S.imitations=S.imitations||[];
+  S.imitations.push({t:t,from:cur.title,d:todayKey()});
+  save();
+  document.getElementById('imitBox').innerHTML='<div class="reply"><b>✓ 存好了。</b> 这句是你自己写的——期末翻摘抄本时，它会是最亮眼的一条。</div>';
 }
 function backToList(){show('s-list');renderList();}
 
+/* ============ 连载小说 ============ */
+const SERIAL_TYPES=[
+  {k:'武侠',emo:'🗡️',desc:'少年侠客，快意恩仇'},
+  {k:'科幻',emo:'🚀',desc:'未来世界，脑洞大开'},
+  {k:'悬疑',emo:'🕵️',desc:'层层反转，越猜越上头'},
+  {k:'都市',emo:'🏙️',desc:'普通少年不普通的事'},
+  {k:'电竞',emo:'🎮',desc:'热血团战，逆风翻盘'},
+  {k:'奇幻',emo:'🐉',desc:'魔法世界，意外不断'},
+  {k:'冒险',emo:'🧭',desc:'闯关探秘，心提到嗓子眼'},
+  {k:'历史冒险',emo:'🏺',desc:'穿越古代，改写风云'}
+];
+const SERIAL_BOOKS={
+  /* 每类型一本连载；chapters 每天解锁一章（先写前3章，后续我持续补写） */
+  '武侠':{title:'少年游·断刀',intro:'镖局少年接过一把断刀，和一个没人敢接的承诺。',author:'写给阿智',
+    chapters:[
+      {t:'第一章 雨夜的镖',paras:["老爷子把那口箱子搬上桌的时候，雨正砸在瓦上，像有人在屋顶跑马。“接，还是不接？”他问我。",       "我十六岁，在镖局打杂三年，连刀都没摸过。可箱子上贴的封条我认得——那是我爹留下的字。我爹是十年前押最后一趟镖时没回来的。","“接。”我听见自己说。老爷子盯了我很久，忽然笑了：“好。三日后走镖，今晚开始，你跟这把刀睡。”","他扔过来一样东西。半截断刀，刀柄上缠的布条，还是我爹的手法。那一夜我没睡，握着刀坐在灯下，听着雨——像听我爹在跟我说什么。"]},
+      {t:'第二章 第一课',paras:["第二天鸡叫头遍，老爷子把我拎到后院。“镖师第一课，不是刀，是忍。”他拿一根扁担站在我面前，“你能在雨里站一个时辰，我再教你第二步。”","雨里站着，冷从脚底往上爬。到半炷香的时候我想撂挑子，可一想到那口箱子，牙一咬又站住了。","一个时辰后，老爷子递来一碗姜汤：“忍住了？”我点头。他忽然用扁担扫我下盘——我摔进泥里，姜汤泼了一身。","“记住这跤。”他把我拽起来，“路上想抢镖的人，不会提前告诉你出招。”"]},
+      {t:'第三章 上路',paras:["出发那天，天放晴了。老爷子骑马在前，我赶车在后，箱子上盖着我爹当年的镖旗。","出城三十里是黑松林。江湖上说，这林子十年没人敢走夜路。我们偏偏要在天黑前穿过去——老爷子说，最险的路，有时反而最安全，因为没人信有人敢走。","林子里静得反常。鸟不叫，风不动。我的手心全是汗，握着那半截断刀，刀柄被我爹的旧布条磨得温热。","走到林子最深处，老爷子忽然勒马，头也不回地说了一句：“来了。别回头，数三下，往左滚。”"]}
+    ]},
+  '科幻':{title:'第七数据层',intro:'少年发现自己的世界每晚会准时“卡顿”三秒。',author:'写给阿智',
+    chapters:[
+      {t:'第一章 卡顿',paras:["我发现世界会卡，是在期中考试那天。笔尖落到答题卡的瞬间，整个教室凝固了——粉笔灰停在半空，前排同学的马尾辫悬着，连窗外的蝉都哑了。","三秒。整整三秒，然后一切继续，好像什么都没发生。监考老师打了个哈欠，没人发现。除了我。","回家路上我盯着红绿灯做实验：绿灯亮起的刹那，我死死盯着它——又是三秒。车的尾灯糊成一片红霞。","那天夜里我在本子上写下一行字：我们这个世界，可能在“刷新”。"]},
+      {t:'第二章 规律',paras:["接下来一周，我记录了每一次卡顿：周二晚自习、周三早读、周四的物理课……我把时间抄在本子上，对着台灯找了三个通宵。","规律出来了：每天三次，间隔恰好六小时，误差不超过十秒。像一个巨大的程序，在定期做某种维护。","我试着在卡顿发生前扔一块橡皮。卡顿中，橡皮停在半空；恢复的瞬间，它继续落下去，轨迹分毫不差。","这不对。真正的系统维护，会留下痕迹。而这个世界，把三秒的空白缝得天衣无缝——除了被我看见。"]},
+      {t:'第三章 第六层',paras:["我第三次卡顿出现在便利店。收银小姑娘的笑僵在脸上，她面前的关东煮冒着热气，热气也凝固了，像一张照片。","那三秒里，我看见了别的东西：货架深处，一排商品的价签在极轻微地闪烁，频率和卡顿一致。像屏幕角落的信号灯。","我伸手去摸。指尖触到价签的刹那，眼前闪过一行悬浮的字，快得像错觉——“LOADING…LAYER 6”。","第六层。我攥紧了拳头。如果世界在“加载第六层”，那第七层——会有什么？"]}
+    ]},
+  '悬疑':{title:'消失的同桌',intro:'开学第一天，我的同桌从全班合影里消失了。',author:'写给阿智',
+    chapters:[
+      {t:'第一章 合影',paras:["开学第一天我们班拍了合影。我站第二排，左边是我的同桌程野——那个总把校服袖子卷到手肘、笑起来有点痞的家伙。","三天后照片洗出来，全班传阅。轮到我时，我数了两遍：第二排，我旁边空着。程野不在照片里。","“程野？”同桌的女生凑过来看，“你旁边不是一直空着吗？”她眼神干净，不像撒谎。","可我手机里还有开学那天的聊天记录，一个备注叫“同桌”的人发来的：兄弟，数学作业借我抄抄。头像是一只在阳光下打哈欠的橘猫。"]},
+      {t:'第二章 痕迹',paras:["我翻遍了所有能翻的东西。班务日志、值日表、运动会的报名单——每个都该有“程野”的地方，都干干净净。","只有我的数学作业本，第三页边角上，有一行铅笔写的小字：谢了兄弟，回头请你喝可乐。字迹不是我的，是被人压着尺子写的，和我聊天记录里那个“同桌”一个风格。","我去问班主任。她推了推眼镜：“咱们班四十九个人，没有转学生啊。”她说这话的时候，目光越过我，落在教室后排某个空座位上，停了半秒。","那半秒，我心里“咯噔”一下。"]},
+      {t:'第三章 空座位',paras:["后排确实有一个空座位，靠着窗，桌肚里干干净净。我以前从没注意过它——奇怪，一个天天在眼皮底下的空位，怎么会像不存在一样。","放学后教室没人，我坐进那个座位。从这往外看，操场的单杠、篮球架、梧桐树，正好框在窗子里，像一幅画。","抽屉最里面，我摸到一样东西，贴在木板背面：一张大头贴。照片上的男生卷着袖子，笑起来有点痞，一只橘猫趴在他肩上。","大头贴背面有一行字，墨迹很新：“别找我。第十个人知道，就全完了。”"]}
+    ]},
+  '都市':{title:'深夜面馆',intro:'只开在午夜的巷口面馆，来的都是“有事的人”。',author:'写给阿智',
+    chapters:[
+      {t:'第一章 十二点的客人',paras:["我家楼下那条巷子里，有家面馆，招牌上没字，只挂一盏灯。它的规矩怪得很：只在午夜到凌晨两点开门，一天只做三碗面。","我是期末考砸那晚撞进去的。不是想吃饭，是不敢回家。老板是个胖大叔，看我一眼，没多问，煮了碗葱油面推过来：“先吃。”","面很烫，我埋头吃完，鼻子忽然就酸了。老板收碗时说了句：“考砸不是输，不敢回家才是。”","我抬头，他已经在擦桌子了，像什么都没说过。那晚我回家，爸没骂我，只说“回来就好”。"]},
+      {t:'第二章 第二个故事',paras:["后来我常去。慢慢发现，深夜来这儿的，都是“有事的人”：丢了工作不敢回家的大哥、和女儿吵翻的阿姨、比赛失利躲在楼道的体育生……","老板从不劝人，只是煮面。他说：“面这个东西，得趁热。人心里的事，也得趁热解决，凉了，就坨了。”","有一次我问老板，为什么一天只做三碗。他说：“三碗，我照顾得过来。人心里的事也一样，一次别装太多。”","我把这话记在了摘抄本上。"]},
+      {t:'第三章 那盏灯',paras:["期末考完那晚，我又去了巷口。灯没亮。面馆的门板上一张纸条：店主有事，停业半月。","我在门口站了很久。巷子口的路灯把我的影子拉得老长，像等一个不会来的人。","回去的路上我想通了一件事：那家面馆煮的从来不只是面。它煮的是“怎么面对”。老板把办法藏在面里，让每个客人自己捞出来。","半个月后灯又亮了。我推门进去，老板正下面，头也不抬：“来啦。今天，还是葱油面？”我说不，我要学会了——回家给我爸煮一碗。"]}
+    ]},
+  '电竞':{title:'青铜队长',intro:'全班倒数第二组了支战队，队长是个青铜。',author:'写给阿智',
+    chapters:[
+      {t:'第一章 报名表',paras:["年级联赛报名表贴出来那天，我们宿舍炸了。老K一拍桌子：“干！报名！”全宿舍欢呼，只有我沉默——因为我段位青铜，全队最低。","“队长你来。”老K把笔塞我手里。我懵了：“我？”他说：“队里没人比你能忍。指挥不看段位，看脑子。”","报名表上要填队名。我想了一晚上，写下三个字：不投降。","交表的时候，隔壁班看了一眼，笑出了声。我把表拍在桌上，转身就走。手心里全是汗，可心里有个声音说：值了。"]},
+      {t:'第二章 首战',paras:["首战对手是上一届四强。开局八分钟，我们被推掉两座塔。耳机里有人叹气：“练练得了。”","我说：“都别说话，听我讲。”我说出那句排练过一百遍的话：“他们上单浪，三分钟后必来偷我们红区。老K埋草，我卖破绽。”","三分钟后，他们上单真的来了。一套技能收了我半管血——然后老K从草里跳出来，反手控住。一换一，我们拿到第一个人头。","耳机里安安静静，然后老K喊：“稳住，能打！”我们真的稳住了。那局输了，但对面打了一小时才赢。赛后对面队长加我好友：“你们那个卖破绽，是真敢演。”"]},
+      {t:'第三章 训练',paras:["从那天起我们定了规矩：每晚八点到十点，训练，不许迟到。老K上课打瞌睡被我记了一次，他没抱怨，第二天顶着黑眼圈准时上线。","我把每个人的位置做成表格：谁的技能放得准、谁一冲动就上头、谁残血就心慌……表格越做越细，像给四个人画像。","一个月后二番战，还是那支四强。这次我们赢了——赢在一波团：我没输出，我用指挥语音把对面五个人骗进了我们布好的口袋。","结算页面弹出来的瞬间，宿舍楼下都能听见我们吼的声音。我盯着屏幕上“胜利”两个字，忽然懂了老K那句话——指挥不看段位，看脑子。"]}
+    ]},
+  '奇幻':{title:'课桌里的龙蛋',intro:'早自习翻书时，我从语文书里摸出一枚会发烫的蛋。',author:'写给阿智',
+    chapters:[
+      {t:'第一章 语文书里的东西',paras:["早自习，我翻《岳阳楼记》，指尖碰到一个不属于纸的东西。低头——书页之间，卧着一枚蛋。青色，拳头大，还有点温。","我下意识合上书。再打开，蛋还在，甚至轻轻滚了一下，像在跟我打招呼。","同桌凑过来：“你脸怎么这么红？”我把书合上，说没事。那节课我一个字没听进去，满脑子只有一个问题：书里，怎么会有一枚蛋？","晚自习后我把它带回家，用旧毛巾裹住，塞进抽屉最深处。半夜，我被一阵热气弄醒——抽屉缝里，透出青色的微光。"]},
+      {t:'第二章 孵化',paras:["蛋壳裂开那晚，我妈加班没回。我守在抽屉前，看着第一道裂缝爬满整个蛋壳，然后——“咔”的一声轻响，一个小脑袋探了出来。","是条龙。说龙有点夸张，更像一只长了鳞片的小壁虎，通体青色，眼睛金得像两粒琥珀。它冲我眨眨眼，然后发出了这辈子的第一声——","不是吼，是打了个喷嚏。喷出的火星子把我的数学卷子烧出一个小洞。那张卷子本来要家长签字，我当时的心情很复杂：害怕、好笑，还有一点点松了口气。","它很黏我。我写作业，它趴在我手背上，尾巴卷住我的手腕，像戴了只活的镯子。"]},
+      {t:'第三章 秘密',paras:["问题很快来了：它吃什么？我试了米饭、火腿肠、辣条——它都不碰。直到有一天我背《出师表》，背到“鞠躬尽瘁”，它忽然眼睛发亮，凑过来，一口吞掉了那页书的一个角。","我急了：“那页要考的！”它打了个嗝，吐出一小团火。从那天起我明白了两件事：一，它吃文字；二，它听得懂我在背什么。","更神的是，自从它来我家，我背课文的速度快了一倍——好像它嚼过的字，我能记得格外牢。期中语文考了我史上最高分，回家路上我在想：这条龙，到底是从哪本书里爬出来的？","晚上我把它放在《西游记》上，它环绕着书转了三圈，忽然抬头，冲我叫了一声。我发誓那一瞬间，我听懂了——它在说：下一个字。"]}
+    ]},
+  '冒险':{title:'地下十七层',intro:'学校后山的防空洞，为什么有第十七层？',author:'写给阿智',
+    chapters:[
+      {t:'第一章 洞口',paras:["学校后山那个防空洞，铁门上挂着锁，锁上挂着牌子：“危房，禁止入内”。牌子下面有人用粉笔写了一行小字：数到十七。","谁写的？什么时候写的？没人知道。我们初二男生有个不成文的传说：那洞里有十七层，走完的人，没一个说过里面什么样。","周五放学，我和阿凯带着两把手电，翻过围墙。铁门的锁虚挂着——像是知道我们要来。","洞里的风很凉，带着土腥味。我打头，一层一层往下数：一层，二层……到第九层，阿凯忽然拽住我：“听。”寂静里，脚下传来极远的、均匀的滴答声，像钟表。"]},
+      {t:'第二章 倒数',paras:["第十层的墙上，有粉笔画的箭头，方向朝下，旁边写着：“还有七天。”我们俩对看一眼，汗毛都立起来了。","可是转过一个弯，箭头旁边又有一行字，字迹很新：“别信上面那个。真正的路在左边。”字迹新旧，意思相反。谁在骗我们？","阿凯要走左边，我拦住他：“最险的路有时反而最安全，是因为没人信有人敢走——可也有反过来的时候：有人希望你走那边。”我们决定扔鞋决定——鞋尖朝右，走右边。","右边的下坡很长，走到头，墙上没有字了，只有一扇门，门上端端正正写着：十六。那扇门没锁。门缝里透出的，不是风，是一点很微弱的、蓝色的光。"]},
+      {t:'第三章 第十七层',paras:["推门之前，阿凯说他腿软，我说我也是。我们笑了一会儿，不那么怕了——人到了最怕的时候，反而会笑。","门后是一间不大的屋子，天花板挂着一盏很旧的灯。正中间一张课桌，桌上放着一本摊开的作业本，本子第一页只有一行字：","“恭喜你数到十七。这座洞一共十七层，但你找的不是洞——是你敢不敢走进来。”","灯忽然灭了。黑暗里滴答声停了。我们打着手电狂奔上楼，一路跑到洞口，夕阳正砸在脸上。阿凯喘着气问我：“那本子，谁写的？”我没回答。我在想另一件事：进洞时我们数了九层，可出来时——我数了，只有八层。"]}
+    ]},
+  '历史冒险':{title:'长安三骑',intro:'三张假面、一封密信，把我们仨卷进大唐的夜里。',author:'写给阿智',
+    chapters:[
+      {t:'第一章 假面',paras:["历史博物馆闭馆前，我在唐代展区看见那三张三彩假面。标签写着：长安遗物，用途不详。我盯着其中一张看了很久——那张脸的嘴角，微微上扬，像在憋笑。","同学李野和大川催我走。就在我们转身那刻，展厅的灯闪了一下，再亮起来时，假面不见了——我们仨的书包里各多了一张。","我那张的脸，嘴角上扬；李野那张，愁眉苦脸；大川那张，生气得像吹胡子。"/*去掉引号闭合问题*/ ,"回宿舍后我借着走廊灯细看，发现面具内沿刻着一行小字：戌时，南门，驮炭翁。当晚我查了半天：戌时，是晚上七点到九点。"]},
+      {t:'第二章 驮炭翁',paras:["我们半信半疑，晚上七点半去了博物馆南门。真有个老爷爷守着个木炭摊——在博物馆门口卖木炭，这事本身就很怪。","他看到我们仨的书包，笑了：“面都到了？戌时三刻开门，只此一晚。”他往墙上一按，砖头缓缓移开一条缝，里面透出来的，是火把的暖光和长安话的叫卖声。","我对李野和大川说：“进去看看就回头，不深走。”这是我这辈子说过最没底气的承诺。","我们跨进去的瞬间，身后的砖合上了。眼前是一条土街，两边灯笼连成河。街上每个人都戴着面具——和我们手里的一模一样。"]},
+      {t:'第三章 密信',paras:["街角有个卖胡饼的大叔，见我们仨站着发愣，压低声音：“新来的？面还没贴就敢逛街？”我们才知道：戴面具不贴面，在这条街等于身份牌没盖章。","贴上面具的刹那，耳朵里“嗡”的一声，周围的一切突然能听懂了——摊贩的吆喝、酒肆的琵琶、马蹄敲青石的脆响，还有一段极低的对话，从街对面酒楼二层飘下来：“……三日后的炭，落进宫里，事就成了。”","李野（愁面）凑过来：“炭？他们说的是驮炭翁的炭？”大川（怒面）已经攥紧了拳头：“那老头对我们挺好，不能让人算计他。”我摸了摸我的笑面，深吸一口气：“先记住那两个人的样子。三日之内，咱们仨，得想办法告诉驮炭翁。”"]}
+    ]}
+};
+function initSerial(){
+  /* 未选类型：下次阅读时弹窗（说明+全类型多选） */
+  if(!S.serialChosen){
+    const m=document.getElementById('typeModal');
+    const grid=document.getElementById('serialTypes');
+    grid.innerHTML=SERIAL_TYPES.map((t,i)=>`<div class="type-chip serialpick" data-i="${i}" onclick="pickSerialType(this)">${t.emo} ${t.k}<div class="tip" style="margin:2px 0 0;color:var(--muted);">${t.desc}</div></div>`).join('');
+    const picked=[];
+    window.pickSerialType=function(el){
+      const i=+el.dataset.i; const k=SERIAL_TYPES[i].k;
+      const idx=picked.indexOf(k);
+      if(idx>=0){picked.splice(idx,1);el.classList.remove('on');}
+      else{picked.push(k);el.classList.add('on');}
+    };
+    window.confirmSerialTypes=function(){
+      if(!picked.length){const h=document.getElementById('serialHint');h.textContent='至少选一个类型哦（可以多选～）';return;}
+      S.serialTypes=picked; S.serialChosen=true; S.serialStart=todayKey(); S.serialRead=[];
+      save(); m.style.display='none'; renderSerial(); renderList();
+    };
+    m.style.display='flex';
+  }
+}
+function serialBook(){
+  if(!S.serialTypes||!S.serialTypes.length)return null;
+  const idx=Math.floor(Date.now()/86400000)%S.serialTypes.length;
+  const k=S.serialTypes[idx];
+  return Object.assign({k:k},SERIAL_BOOKS[k]);
+}
+function daysSince(start){
+  const a=new Date(start+'T00:00:00'); const b=new Date(todayKey()+'T00:00:00');
+  return Math.max(0,Math.round((b-a)/86400000));
+}
+function unlockedChapters(bk){
+  const n=daysSince(S.serialStart)+1;
+  return Math.min(bk.chapters.length,n);
+}
+function renderSerial(){
+  const box=document.getElementById('serialBox'); if(!box)return;
+  if(!S.serialChosen){box.innerHTML='';return;}
+  const bk=serialBook(); if(!bk){box.innerHTML='';return;}
+  const un=unlockedChapters(bk);
+  const nextTxt=un<bk.chapters.length?('下一章：明晚解锁'):'连载中·持续更新';
+  box.innerHTML=`<div class="serial-card" onclick="openSerial()"><div class="sk">🔥 连载 · ${bk.k} · 已解锁 ${un}/${bk.chapters.length} 章</div><h3>${bk.title}</h3><div class="sd">📖 ${bk.intro}</div><div class="sd" style="color:#8fa8cd;">你选的类型每天轮着更新 · ${nextTxt}</div></div>`;
+}
+function openSerial(){
+  const bk=serialBook(); if(!bk)return;
+  const un=unlockedChapters(bk);
+  S.serialRead=S.serialRead||[]; save();
+  const box=document.getElementById('serialSheet');
+  document.getElementById('serialCrumb').textContent='🔥 连载 · '+bk.title;
+  let html='';
+  for(let i=0;i<un;i++){
+    const ch=bk.chapters[i];
+    const isCur=(i===un-1);
+    html+=`<div style="margin-top:18px;${isCur?'':'opacity:.62;'}"><div style="border-top:1px solid var(--line);padding-top:10px;display:flex;justify-content:space-between;"><div style="font-size:12px;letter-spacing:1px;color:${isCur?'var(--warm)':'var(--muted)'};">${ch.t}</div><span style="font-size:11px;color:var(--green);">${(S.serialRead[i]?'✓ 已读':(isCur?'今日更新':''))}</span></div><div class="sheet" style="margin-top:8px;">${ch.paras.map(p=>`<div class="para serialpick" ondblclick="catchPara(this)" ontouchstart="touchTap(this)" onclick="singleTapCatch(this)" title="双击收藏这句话">${p}</div>`).join('')}</div></div>`;
+  }
+  if(un<bk.chapters.length){
+    html+=`<div style="margin-top:16px;text-align:center;color:var(--muted);font-size:12.5px;padding:10px;border:1px dashed var(--line);border-radius:10px;">🔒 ${bk.chapters[un].t} —— 明晚解锁（每天一章，别急，好故事值得等）</div>`;
+  }
+  const curIdx=un-1;
+  html+=`<button class="finish" style="margin-top:14px;" onclick="serialReadDone(${curIdx})">${S.serialRead[curIdx]?'本章已读完 · 回到今天':'读完了 · 聊两句'}</button>`;
+  box.innerHTML=html;
+  show('s-serial');
+}
+function serialReadDone(i){
+  S.serialRead=S.serialRead||[];
+  S.serialRead[i]=true; save();
+  const bk=serialBook();
+  const ch=bk.chapters[i];
+  const q=['读完这章，你最好奇接下来什么？','这一章里，你最有感觉的是谁/哪句？','猜猜看，下一章会发生什么？'][i%3];
+  const optsMap=[
+    [{t:'想知道后面',r:'好奇心就是最好的追更理由～'},{t:'有句话戳我',r:'戳到你的那句，双击就能收藏。'},{t:'为主角担心',r:'会担心，说明你读进去了。'},{t:'说不上来',r:'说不上来也算一种感受。'}],
+    [{t:'主角',r:'他身上有你的影子吧。'},{t:'配角',r:'会记住配角的人，阅读不一般。'},{t:'某句话',r:'双击那句，存进摘抄本。'},{t:'都还好',r:'那也正常，不是每章都炸。'}],
+    [{t:'我猜到了',r:'敢猜才敢读，明天验证。'},{t:'完全没头绪',r:'没头绪更好，悬念就是要人命。'},{t:'有点不好的预感',r:'预感越坏，章越好看。'},{t:'等更新再说',r:'行，那明晚见。'}]
+  ];
+  const opts=optsMap[i%3];
+  document.getElementById('serialSheet').insertAdjacentHTML('beforeend',
+    `<div class="interact"><div class="k">✿ ${q}</div>${opts.map(o=>`<button class="em" onclick="this.style.borderColor='var(--gold)';this.style.background='#f3ead6'">${o.t}</button>`).join('')}<div class="tip" style="margin-top:8px;">${opts.map(o=>o.r).join('<br>')} </div></div>`);
+}
+/* 摘抄：双击段落收藏 */
+function catchPara(el){
+  const tail='✓ 已收藏';
+  let text=el.textContent.trim();
+  const idx=text.indexOf(tail);
+  if(idx>=0)text=text.substring(0,idx).trim();
+  let quotes=[];
+  try{const st=JSON.parse(localStorage.getItem(KEY)||'{}');quotes=st.quotes||[];}catch(e){}
+  if(quotes.some(q=>q.t===text)){alert('这句已经在摘抄本里啦');return;}
+  const bk=serialBook();
+  quotes.push({t:text,from:bk?bk.title:(cur?cur.title:''),d:todayKey(),kind:'摘抄'});
+  try{const st=JSON.parse(localStorage.getItem(KEY)||'{}');st.quotes=quotes;localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}
+  S.quotes=quotes;
+  el.style.background='#f3ead6';
+  el.insertAdjacentHTML('beforeend','<span class="catchbtn done">✓ 已收藏</span>');
+}
+function singleTapCatch(el){ /* 移动端单击提示，桌面双击收藏 */
+  if(window.matchMedia('(hover: none)').matches){
+    if(el.dataset.tap==='1'){el.dataset.tap='';catchPara(el);}
+    else{el.dataset.tap='1'; el.style.background='#fbf3e0'; setTimeout(()=>{if(el.dataset.tap==='1'){el.style.background='';el.dataset.tap='';}},600);}
+  }
+}
+function touchTap(){}
+/* ============ 摘抄本页 ============ */
+function openQuotes(){
+  const box=document.getElementById('quoteSheet');
+  S.quotes=S.quotes||[]; S.imitations=S.imitations||[];
+  const qs=S.quotes.slice().reverse();
+  const ims=S.imitations.slice().reverse();
+  if(!qs.length&&!ims.length){box.innerHTML='<div class="tip" style="text-align:center;padding:26px 0;">还什么都没有。<br>读连载时双击句子、或读完文章做仿写，它们会住进这里。</div>';}
+  else{
+    let h='';
+    if(ims.length){h+='<div class="subtab">✍️ 我的仿写</div>';h+=ims.map((q,i)=>`<div class="quote-item"><div class="qt">${q.t}</div><div class="qs">仿写自《${q.from}》 · ${q.d}</div><span class="qdel" onclick="delImit(${S.imitations.length-1-i})">删除</span></div>`).join('');}
+    if(qs.length){h+='<div class="subtab">📝 好句摘抄</div>';h+=qs.map((q,i)=>`<div class="quote-item"><div class="qt">${q.t}</div><div class="qs">《${q.from}》 · ${q.d}</div><span class="qdel" onclick="delQuote(${S.quotes.length-1-i})">删除</span></div>`).join('');}
+    box.innerHTML=h;
+  }
+  show('s-quotes');
+}
+function delQuote(i){S.quotes.splice(i,1);save();openQuotes();}
+function delImit(i){S.imitations.splice(i,1);save();openQuotes();}
+/* ============ 周日回顾 ============ */
+function renderWeekReview(){
+  const el=document.getElementById('weekReview'); if(!el)return;
+  const today=new Date();
+  if(today.getDay()!==0){el.style.display='none';return;}
+  const dd=todayKey();
+  const days=S.days||{};
+  let week=0,qw=0;
+  const base=new Date();
+  for(let i=0;i<7;i++){
+    const d=new Date(base); d.setDate(base.getDate()-i);
+    const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    week+=(days[k]||0);
+  }
+  qw=(S.quotes||[]).filter(q=>withinWeek(q.d)).length;
+  const iw=(S.imitations||[]).filter(q=>withinWeek(q.d)).length;
+  const total=S.totalRead||0;
+  el.style.display='block';
+  el.innerHTML=`<div class="k" style="font-size:12px;letter-spacing:2px;color:var(--gold);margin-bottom:10px;">🎉 周日小回顾 · 你的这一周</div>
+    <div style="font-size:14px;line-height:2.1;">这周读了 <b style="color:var(--warm)">${week}</b> 篇 · 摘抄 <b style="color:var(--warm)">${qw}</b> 句 · 仿写 <b style="color:var(--warm)">${iw}</b> 句<br>累计已读 <b style="color:var(--warm)">${total}</b> 篇。</div>`
+    +(week>=5?'<div class="tip" style="color:var(--green);">这周读得又稳又多，给自己鼓个掌👏</div>':week>=1?'<div class="tip">读一篇是一篇，你已经在路上。下周试试多摘一句？</div>':'<div class="tip">这周有点忙吧？没读也没关系——下周一开始，它一直都在。</div>')
+    +(total>=20?('<div class="reply" style="margin-top:10px;"><b>姐姐的话：</b>'+ (S.sisterMsg||'读到第20篇了，比自己想象中能坚持吧？——我一直看着呢。') +'</div>'):'');
+}
+function withinWeek(dk){
+  const t=new Date(todayKey()+'T00:00:00');
+  const d=new Date(dk+'T00:00:00');
+  return Math.round((t-d)/86400000)>=0 && Math.round((t-d)/86400000)<=6;
+}
 /* 初始化 */
+renderList();
+renderSerial();
+renderWeekReview();
+initSerial();
+window.openQuotes=openQuotes;
 renderList();
 </script>
 </body>
