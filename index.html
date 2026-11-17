@@ -71,7 +71,16 @@
   <!-- 今日列表 -->
   <div class="screen on" id="s-list">
     <div class="cards" id="todayCards"></div>
-    <div id="footprint" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px;"></div>
+<div id="footprint" style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px;"></div>
+    <div class="reco-card" style="margin-top:12px;">
+      <div class="k">📚 我的书架 · 我关注的书</div>
+      <div id="shelfBox"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <input id="shelfInput" type="text" placeholder="输入书名，回车或点添加（例：哈利·波特）" onkeydown="if(event.key==='Enter')addShelfBook()" style="flex:1;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink);">
+        <button class="type-btn" onclick="addShelfBook()" style="flex:none;background:var(--gold);border-color:var(--gold);color:#fff;padding:10px 16px;">添加</button>
+      </div>
+      <div class="tip" style="margin-top:6px;">想读的、正在读的书都放进来；读完或不想读了，点书旁边的删除就行。</div>
+    </div>
 <div class="reco-card" style="margin-top:16px;">
       <div class="k">🌙 今晚，还想读点别的吗？</div>
       <div class="type-row" id="typeRow"></div>
@@ -269,6 +278,33 @@ function renderList(){
   renderTypes();
   /* 足迹 */
   renderFoot();
+  /* 书架 */
+  renderShelf();
+}
+/* ============ 我的书架 ============ */
+function shelfBooks(){ S.shelf=S.shelf||[]; return S.shelf; }
+function renderShelf(){
+  const box=document.getElementById('shelfBox'); if(!box)return;
+  const books=shelfBooks();
+  if(!books.length){ box.innerHTML='<div class="tip">书架空空的～把你想读的书加进来吧。</div>'; return; }
+  box.innerHTML=books.map((b,i)=>`<div class="book" style="display:flex;align-items:center;gap:8px;"><div style="flex:1;"><div class="bn">${b.name}</div>${b.note?`<div class="bd">${b.note}</div>`:''}</div><button onclick="delShelfBook(${i})" style="flex:none;border:1px solid #d9a0a0;background:#f8eaea;color:#a05050;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit;">删除</button></div>`).join('');
+}
+function addShelfBook(){
+  const inp=document.getElementById('shelfInput');
+  const v=(inp?inp.value:'').trim();
+  if(!v)return;
+  const books=shelfBooks();
+  if(books.some(b=>b.name===v)){ inp.value=''; renderShelf(); return; }
+  books.push({name:v,added:todayKey()});
+  save();
+  inp.value='';
+  renderShelf();
+}
+function delShelfBook(i){
+  const books=shelfBooks();
+  books.splice(i,1);
+  save();
+  renderShelf();
 }
 /* 足迹数据 */
 function todayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
