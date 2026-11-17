@@ -55,7 +55,29 @@
   .book .bn{font-weight:800;font-size:15px;}
   .book .bd{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.6;}
   .tip{font-size:12.5px;color:var(--muted);line-height:1.8;margin-top:6px;}
-  .footnote{text-align:center;color:var(--muted);font-size:11px;margin-top:24px;letter-spacing:1px;}
+.footnote{text-align:center;color:var(--muted);font-size:11px;margin-top:24px;letter-spacing:1px;}
+  /* ---- 书架：可读的书 ---- */
+  .bcover{width:118px;border-radius:10px;padding:14px 12px;color:#fff;cursor:pointer;position:relative;min-height:150px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 5px 14px rgba(40,30,0,.18);transition:.15s;border:1px solid rgba(255,255,255,.25);}
+  .bcover:hover{transform:translateY(-3px);}
+  .bcover .bt{font-weight:900;font-size:15px;line-height:1.45;}
+  .bcover .au{font-size:11px;opacity:.9;margin-top:5px;}
+  .bcover .ab{font-size:10.5px;opacity:.95;background:rgba(0,0,0,.24);border-radius:4px;padding:2px 6px;align-self:flex-start;}
+  /* ---- 书阅读页 ---- */
+  .toc-btn{border:2px solid var(--gold);color:var(--gold);background:transparent;border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit;margin-left:auto;}
+  .readshell{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 20px;box-shadow:0 4px 14px rgba(60,40,0,.05);}
+  .readshell .rk{font-size:13px;letter-spacing:1px;color:var(--muted);}
+  .readshell h2{font-size:19px;text-align:center;letter-spacing:1px;margin:4px 0 2px;}
+  .readshell .au2{font-size:12px;color:var(--muted);text-align:center;margin-bottom:12px;}
+  .readshell .para{font-size:16px;line-height:2.05;letter-spacing:.5px;text-align:justify;}
+  .readshell .para + .para{margin-top:12px;}
+  .tocBox{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px;}
+  .toc-item{display:flex;justify-content:space-between;align-items:center;padding:9px 4px;border-bottom:1px dashed var(--line);cursor:pointer;font-size:14px;}
+  .toc-item:last-child{border:none;}
+  .toc-item.cur{color:var(--warm);font-weight:800;}
+  .toc-item .p{font-size:11px;color:var(--muted);}
+  .navbtn{flex:1;padding:11px;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-family:inherit;font-weight:700;}
+  .navbtn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted);}
+  .navbtn.gold{background:linear-gradient(135deg,var(--warm),var(--gold));color:#fff;}
 </style>
 </head>
 <body>
@@ -80,6 +102,10 @@
         <button class="type-btn" onclick="addShelfBook()" style="flex:none;background:var(--gold);border-color:var(--gold);color:#fff;padding:10px 16px;">添加</button>
       </div>
       <div class="tip" style="margin-top:6px;">想读的、正在读的书都放进来；读完或不想读了，点书旁边的删除就行。</div>
+      <div style="margin-top:14px;border-top:1px dashed var(--line);padding-top:12px;">
+        <div class="k">✨ 可读的书 · 点开就能读（有目录，自动记进度）</div>
+        <div id="readableGrid" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;"></div>
+      </div>
     </div>
 <div class="reco-card" style="margin-top:16px;">
       <div class="k">🌙 今晚，还想读点别的吗？</div>
@@ -95,8 +121,16 @@
   <!-- 阅读+互动 -->
   <div class="screen" id="s-read">
     <div class="crumb"><span class="back" onclick="backToList()">← 今日</span><span id="crumbTag"></span></div>
-    <div class="sheet" id="sheet"></div>
+<div class="sheet" id="sheet"></div>
     <div id="interactBox"></div>
+  </div>
+
+  <!-- 书阅读页 -->
+  <div class="screen" id="s-reading">
+    <div class="crumb"><span class="back" onclick="backToList()">← 书架</span><span id="readTitle"></span><button class="toc-btn" onclick="toggleToc()">目录</button></div>
+    <div class="readshell" id="readshell"></div>
+    <div class="tocBox" id="tocBox" style="display:none;"></div>
+    <div class="turn" id="readNav" style="margin-top:14px;"></div>
   </div>
 
   <div class="footnote">每日短读 · 只负责让你多看见一点世界</div>
@@ -280,10 +314,13 @@ function renderList(){
   renderFoot();
   /* 书架 */
   renderShelf();
+  /* 书架自动推荐 */
+  renderShelfAuto();
 }
 /* ============ 我的书架 ============ */
 function shelfBooks(){ S.shelf=S.shelf||[]; return S.shelf; }
 function renderShelf(){
+  renderReadable();
   const box=document.getElementById('shelfBox'); if(!box)return;
   const books=shelfBooks();
   if(!books.length){ box.innerHTML='<div class="tip">书架空空的～把你想读的书加进来吧。</div>'; return; }
@@ -305,6 +342,106 @@ function delShelfBook(i){
   books.splice(i,1);
   save();
   renderShelf();
+}
+/* ============ 可读的书（原创短篇，带目录+进度） ============ */
+const READABLE=[
+ {id:'b1',title:'山间与雪线',author:'写给阿智',bg:'linear-gradient(135deg,#3f6188,#1c3550)',
+  chapters:[
+   {t:'一、一封到不了的家',paras:["我爸在帕米尔高原守了四年。山太高，信号不好，信常常在路上，走着走着就没了。","我妈总把到家的信纸按日期压平，裱进相册。有一回信被雨淋湿，字都洇开了，我妈还是收好，说那是爸寄回来的，不能扔。","那封信里就一行字：爸说，山上的雪今年特别大，怕是回不去过年了，可等到开春，一定带你们去村口那棵老槐树底下坐坐。"]},
+   {t:'二、芒果干',paras:["后来爸托人从山那边捎回来一袋芒果干。他说是邻居捎带的，给我换换口味。","我舍不得一次吃完，每天一小块。到第七天，摸到袋底，压着一张折得小小的字条：“给娃读书用。”是爸的字，写得有点抖。","字条底下，是他攒下的一点钱，被芒果干浸了一路的甜香。"]},
+   {t:'三、雪线以南',paras:["高二那年暑假，我第一次去看他。坐了三天三夜的车，又爬了大半天的山。","他在哨所门口等我，被风把脸吹得通红，见了我，却先笑了。","夜里我翻他的柜子，翻到一张折了又折的纸，画着山口和一道雪线，最下面一行小字：“家，在雪线的南边。”","那一刻我懂了：他守的从来不是那座山，是山南边，那些还在等他回家的人。"]}
+ ]},
+ {id:'b2',title:'雨季的伞',author:'写给阿智',bg:'linear-gradient(135deg,#7d5a92,#4a3f7a)',
+  chapters:[
+   {t:'一、顺路',paras:["那天下雨，他举着伞从我身边走过去，忽然停了半秒：“顺路吗？”","我说顺路。其实我家在相反方向。他也没追问，把伞往我这边倾了倾。","一路上我们聊了很多。到家时，我才发现他半边肩，早被雨打湿了。"]},
+   {t:'二、一场雨',paras:["后来我才知道，他家根本不在我那个方向。他那天是特意多绕了一段路，就为那句“顺路”。","我没说破，他也没说。那场雨之后，只要下雨，他都会多带一把伞。","我们之间的朋友，好像就是从那一句“顺路”开始的，一路也没破。"]},
+   {t:'三、毕业的晚霞',paras:["毕业那天，又下雨。他把伞往我手里一塞：“伞给你，以后我可就不带了。”","我攥着那把旧伞，站在校门口，雨后的晚霞拉得很长。","很多年过去，我还是会在下雨天想起：有个人，愿意把回家的路，绕到我这边的门。"]}
+ ]}
+];
+let curBook=null,curChI=0,curPar=0;
+function renderReadable(){
+  const g=document.getElementById('readableGrid'); if(!g)return;
+  g.innerHTML=READABLE.map(b=>{
+    const p=S.progress&&S.progress[b.id];
+    const chip=p?(p.done?'已读完':('读至 第'+(p.ch+1)+'章')):'未读';
+    return `<div class="bcover" style="background:${b.bg}" onclick="openBook('${b.id}')"><div><div class="bt">${b.title}</div><div class="au">${b.author}</div></div><span class="ab">${chip}</span></div>`;
+  }).join('');
+}
+function openBook(id){
+  const b=READABLE.find(x=>x.id===id); if(!b)return;
+  curBook=b;
+  const p=(S.progress&&S.progress[id])||null;
+  if(p&&p.done){ curChI=p.ch||0; curPar=0; show('s-reading'); finishBook(); return; }
+  curChI=p?Math.min(p.ch,b.chapters.length-1):0;
+  curPar=p?Math.min((p.para||0),b.chapters[curChI].paras.length-1):0;
+  show('s-reading'); renderRead();
+}
+function renderRead(){
+  const b=curBook, ch=b.chapters[curChI], last=b.chapters.length-1;
+  document.getElementById('readTitle').textContent=b.title;
+  S.progress=S.progress||{}; S.progress[b.id]={ch:curChI,para:curPar}; save();
+  const slice=ch.paras.slice(curPar,curPar+3);
+  document.getElementById('readshell').innerHTML=
+    `<div class="rk">第${curChI+1}章 · ${ch.t}</div><h2>${b.title}</h2><div class="au2">${b.author}</div>`+
+    slice.map(p=>`<div class="para">${p}</div>`).join('');
+  const lastPage=curPar+3>=ch.paras.length;
+  const nav=document.getElementById('readNav');
+  nav.innerHTML=`<div style="display:flex;gap:10px"><button class="navbtn ghost" onclick="prevPage()">← 上一页</button>${(curChI===last&&lastPage)?'<button class="navbtn gold" onclick="finishBook()">读到最后啦</button>':'<button class="navbtn gold" onclick="nextPage()">下一页 →</button>'}</div>`;
+}
+function nextPage(){
+  const b=curBook, ch=b.chapters[curChI], last=b.chapters.length-1;
+  if(curPar+3<ch.paras.length){ curPar+=3; renderRead(); }
+  else if(curChI<last){ curChI++; curPar=0; renderRead(); }
+  else { finishBook(); }
+}
+function prevPage(){
+  if(curPar>0){ curPar=Math.max(0,curPar-3); renderRead(); }
+  else if(curChI>0){ curChI--; curPar=0; renderRead(); }
+}
+function finishBook(){
+  S.progress=S.progress||{}; S.progress[curBook.id]={ch:curChI,para:0,done:true}; save();
+  document.getElementById('readTitle').textContent=curBook.title;
+  document.getElementById('readshell').innerHTML=`<div style="text-align:center;padding:26px 0"><div style="font-size:34px">📖</div><h2>《${curBook.title}》读完了</h2><p style="color:var(--muted);margin-top:8px">又读完一本，好样的。</p></div>`;
+  document.getElementById('readNav').innerHTML=`<div style="display:flex;gap:10px"><button class="navbtn ghost" onclick="restartBook()">再读一遍</button><button class="navbtn gold" onclick="backToList()">回书架</button></div>`;
+}
+function restartBook(){ curChI=0; curPar=0; renderRead(); }
+function toggleToc(){
+  const box=document.getElementById('tocBox');
+  if(box.style.display==='block'){ box.style.display='none'; return; }
+  const b=curBook;
+  box.innerHTML=`<div style="font-size:12px;letter-spacing:1px;color:var(--muted);margin-bottom:6px;">📖 目录 · ${b.title}</div>`+
+    b.chapters.map((c,i)=>{
+      const cur=(i===curChI);
+      const p=S.progress&&S.progress[b.id];
+      const done=(p&&((p.ch>i)||(p.ch===i&&p.done)));
+      return `<div class="toc-item${cur?' cur':''}" onclick="jumpChapter(${i})"><span>${c.t}</span><span class="p">${cur?'正在读':(done?'✓ 已读':'')}</span></div>`;
+    }).join('')+
+    (S.progress&&S.progress[b.id]&&S.progress[b.id].done?'<div style="font-size:12px;color:var(--green);margin-top:6px;">✓ 全书已读完</div>':'');
+  box.style.display='block';
+}
+function jumpChapter(i){ curChI=i; curPar=0; document.getElementById('tocBox').style.display='none'; renderRead(); }
+/* ============ 书架口味 → 今晚推荐 ============ */
+function shelfHintType(){
+  const kw=[
+    ['冒险奇幻',['冒险','奇幻','魔法','哈利','宝','神秘']],
+    ['青春校园',['校园','青春','同学','同桌','学校']],
+    ['推理悬疑',['推理','悬疑','侦探','破案','案件','谜']],
+    ['科幻冒险',['科幻','未来','机器人','外星','宇宙']],
+    ['温暖治愈',['温暖','治愈','感动','暖']],
+    ['动物世界',['动物','狼','狗','猫','战象']],
+    ['历史故事',['历史','明朝','古代','将军','史记']],
+    ['成长故事',['成长','长大','坚持','努力']]
+  ];
+  const texts=(S.shelf||[]).map(b=>b.name).concat(S.likes||[]);
+  for(const [t,keys] of kw){ if(texts.some(s=>keys.some(k=>s.includes(k)))) return t; }
+  return null;
+}
+function renderShelfAuto(){
+  const t=shelfHintType();
+  if(!t)return;
+  showBooks(t);
+  const box=document.getElementById('bookBox');
+  if(box) box.insertAdjacentHTML('afterbegin','<div class="tip" style="color:var(--warm)">📌 根据你的书架/口味，先给你推荐这一类：</div>');
 }
 /* 足迹数据 */
 function todayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
